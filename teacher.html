@@ -1,49 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Teacher Registration – Lets Teach</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Teacher Registration | Lets Teach</title>
 </head>
 <body>
 
-<h2>Teacher Registration</h2>
+  <h2>Teacher Registration</h2>
 
-<input id="uid" placeholder="Firebase UID"><br><br>
-<input id="name" placeholder="Name"><br><br>
-<input id="phone" placeholder="Phone"><br><br>
-<input id="subject" placeholder="Subject"><br><br>
-<input id="city" placeholder="City"><br><br>
-<input id="experience" placeholder="Experience (years)"><br><br>
+  <input id="uid" placeholder="Firebase UID"><br><br>
+  <input id="name" placeholder="Name"><br><br>
+  <input id="phone" placeholder="Phone"><br><br>
+  <input id="subject" placeholder="Subject"><br><br>
+  <input id="city" placeholder="City"><br><br>
+  <input id="experience" placeholder="Experience (years)"><br><br>
 
-<button onclick="createTeacher()">Create Profile</button>
+  <button onclick="registerTeacher()">Register</button>
 
-<p id="msg"></p>
+  <p id="result"></p>
 
-<script>
-function createTeacher() {
-  const data = {
-    uid: document.getElementById("uid").value,
-    name: document.getElementById("name").value,
-    phone: document.getElementById("phone").value,
-    subject: document.getElementById("subject").value,
-    city: document.getElementById("city").value,
-    experience: document.getElementById("experience").value
-  };
-
-  fetch("https://express-hello-world-uh96.onrender.com/api/teacher/create", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  })
-  .then(res => res.json())
-  .then(d => {
-    document.getElementById("msg").innerText = d.message;
-  })
-  .catch(err => {
-    document.getElementById("msg").innerText = "Error";
-  });
-}
-</script>
+  <script>
+    function registerTeacher() {
+      fetch("https://express-hello-world-uh96.onrender.com/api/teacher/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          uid: document.getElementById("uid").value,
+          name: document.getElementById("name").value,
+          phone: document.getElementById("phone").value,
+          subject: document.getElementById("subject").value,
+          city: document.getElementById("city").value,
+          experience: document.getElementById("experience").value
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("result").innerText =
+          data.message || "Teacher registered";
+      })
+      .catch(() => {
+        document.getElementById("result").innerText =
+          "Error connecting to backend";
+      });
+    }
+  </script>
 
 </body>
 </html>
+
+
+
