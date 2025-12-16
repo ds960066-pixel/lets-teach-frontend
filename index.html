@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lets Teach</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+
+  <h1>Lets Teach</h1>
+  <p>Connecting Teachers & Institutes</p>
+
+  <hr>
+
+  <h3>Test Backend</h3>
+  <button onclick="testAPI()">Test API</button>
+  <p id="result"></p>
+
+  <script>
+    function testAPI() {
+      fetch("https://express-hello-world-uh96.onrender.com/api/test")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("result").innerText = data.message;
+        })
+        .catch(err => {
+          document.getElementById("result").innerText =
+            "Error connecting to backend";
+        });
+    }
+  </script>
+
+</body>
+</html>
