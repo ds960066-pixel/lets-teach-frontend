@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Teacher Invites | Lets Teach</title>
+</head>
+<body>
+
+  <h2>My Invites</h2>
+
+  <input id="uid" placeholder="Teacher UID"><br><br>
+  <button onclick="loadInvites()">Load Invites</button>
+
+  <ul id="inviteList"></ul>
+
+  <script>
+    function loadInvites() {
+      const uid = document.getElementById("uid").value;
+
+      fetch(
+        `https://express-hello-world-uh96.onrender.com/api/invite/teacher/${uid}`
+      )
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById("inviteList");
+          list.innerHTML = "";
+
+          data.invites.forEach(invite => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+              Institute UID: ${invite.instituteUid}
+              | Status: ${invite.status}
+              <button onclick="respond('${invite._id}', 'accepted')">Accept</button>
+              <button onclick="respond('${invite._id}', 'rejected')">Reject</button>
+            `;
+            list.appendChild(li);
+          });
+        });
+    }
+
+    function respond(inviteId, status) {
+      fetch("https://express-hello-world-uh96.onrender.com/api/invite/respond", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ inviteId, status })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        loadInvites();
+      });
+    }
+  </script>
+
+</body>
+</html>
