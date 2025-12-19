@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Institute Registration | Lets Teach</title>
+</head>
+<body>
+
+  <h2>Institute Registration</h2>
+
+  <input id="uid" placeholder="Firebase UID"><br><br>
+  <input id="name" placeholder="Institute Name"><br><br>
+  <input id="phone" placeholder="Phone"><br><br>
+  <input id="city" placeholder="City"><br><br>
+  <input id="address" placeholder="Address"><br><br>
+  <input id="subjectsNeeded" placeholder="Subjects Needed"><br><br>
+
+  <button onclick="registerInstitute()">Register</button>
+
+  <p id="result"></p>
+
+  <script>
+    function registerInstitute() {
+      fetch("https://express-hello-world-uh96.onrender.com/api/institute/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          uid: document.getElementById("uid").value,
+          name: document.getElementById("name").value,
+          phone: document.getElementById("phone").value,
+          city: document.getElementById("city").value,
+          address: document.getElementById("address").value,
+          subjectsNeeded: document.getElementById("subjectsNeeded").value
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("result").innerText =
+          data.message || "Institute registered";
+      })
+      .catch(() => {
+        document.getElementById("result").innerText =
+          "Error connecting to backend";
+      });
+    }
+  </script>
+
+</body>
+</html>
