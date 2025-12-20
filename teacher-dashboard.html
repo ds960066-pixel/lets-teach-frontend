@@ -7,14 +7,15 @@
 
   <h2>Teacher Dashboard</h2>
 
-  <input id="teacherUid" placeholder="Enter Teacher UID">
-  <button onclick="loadInvites()">Load My Invites</button>
+  <input id="uid" placeholder="Enter Teacher UID"><br><br>
+
+  <button onclick="loadInvites()">Load Invites</button>
 
   <ul id="inviteList"></ul>
 
   <script>
     function loadInvites() {
-      const uid = document.getElementById("teacherUid").value;
+      const uid = document.getElementById("uid").value;
 
       fetch(`https://express-hello-world-uh96.onrender.com/api/invite/teacher/${uid}`)
         .then(res => res.json())
@@ -29,13 +30,13 @@
 
           data.invites.forEach(invite => {
             const li = document.createElement("li");
-            li.innerText = `Institute UID: ${invite.instituteUid} | Status: ${invite.status}`;
+            li.innerText =
+              `Institute UID: ${invite.instituteUid} | Status: ${invite.status}`;
             list.appendChild(li);
           });
         })
         .catch(() => {
-          document.getElementById("inviteList").innerHTML =
-            "<li>Error loading invites</li>";
+          alert("Error connecting to backend");
         });
     }
   </script>
