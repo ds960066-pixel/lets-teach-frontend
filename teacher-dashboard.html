@@ -14,32 +14,47 @@
   <ul id="inviteList"></ul>
 
   <script>
-    function loadInvites() {
-      const uid = document.getElementById("uid").value;
+  function loadInvites() {
+    const uid = document.getElementById("uid").value;
 
-      fetch(`https://express-hello-world-uh96.onrender.com/api/invite/teacher/${uid}`)
-        .then(res => res.json())
-        .then(data => {
-          const list = document.getElementById("inviteList");
-          list.innerHTML = "";
+    fetch(`https://express-hello-world-uh96.onrender.com/api/invite/teacher/${uid}`)
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById("inviteList");
+        list.innerHTML = "";
 
-          if (!data.invites || data.invites.length === 0) {
-            list.innerHTML = "<li>No invites yet</li>";
-            return;
-          }
+        if (!data.invites || data.invites.length === 0) {
+          list.innerHTML = "<li>No invites yet</li>";
+          return;
+        }
 
-          data.invites.forEach(invite => {
-            const li = document.createElement("li");
-            li.innerText =
-              `Institute UID: ${invite.instituteUid} | Status: ${invite.status}`;
-            list.appendChild(li);
-          });
-        })
-        .catch(() => {
-          alert("Error connecting to backend");
+        data.invites.forEach(invite => {
+          const li = document.createElement("li");
+
+          li.innerHTML = `
+            Institute: ${invite.instituteUid}
+            | Status: ${invite.status}
+            <br>
+            <button onclick="respond('${invite._id}', 'accepted')">Accept</button>
+            <button onclick="respond('${invite._id}', 'rejected')">Reject</button>
+            <hr>
+          `;
+
+          list.appendChild(li);
         });
-    }
-  </script>
+      });
+  }
 
-</body>
-</html>
+  function respond(inviteId, status) {
+    fetch("https://express-hello-world-uh96.onrender.com/api/invite/respond", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ inviteId, status })
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message);
+      loadInvites();
+    });
+  }
+</script>
