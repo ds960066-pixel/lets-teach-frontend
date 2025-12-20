@@ -16,7 +16,8 @@
 <pre id="profile"></pre>
 
 <h3>Invites</h3>
-<pre id="invites"></pre>
+<ul id="invites"></ul>
+
 
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
@@ -24,13 +25,26 @@ const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 function loadDashboard() {
   const uid = document.getElementById("uid").value;
 
-  // Load profile
-  fetch(`${BASE_URL}/api/teacher/${uid}`)
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById("profile").innerText =
-        JSON.stringify(data, null, 2);
+ // Load invites
+fetch(`${BASE_URL}/api/invite/teacher/${uid}`)
+  .then(res => res.json())
+  .then(data => {
+    const ul = document.getElementById("invites");
+    ul.innerHTML = "";
+
+    if (!data.invites || data.invites.length === 0) {
+      ul.innerHTML = "<li>No invites yet</li>";
+      return;
+    }
+
+    data.invites.forEach(invite => {
+      const li = document.createElement("li");
+      li.innerText = `Invite from Institute: ${invite.instituteUid} (Status: ${invite.status})`;
+      ul.appendChild(li);
     });
+  });
+
+
 
   // Load invites
   fetch(`${BASE_URL}/api/invite/teacher/${uid}`)
