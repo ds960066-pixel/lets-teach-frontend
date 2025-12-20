@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Teacher Dashboard | Lets Teach</title>
+</head>
+<body>
+
+<h2>Teacher Dashboard</h2>
+
+<input id="uid" placeholder="Enter your UID">
+<button onclick="loadDashboard()">Load</button>
+
+<hr>
+
+<h3>My Profile</h3>
+<pre id="profile"></pre>
+
+<h3>Invites</h3>
+<pre id="invites"></pre>
+
+<script>
+const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+
+function loadDashboard() {
+  const uid = document.getElementById("uid").value;
+
+  // Load profile
+  fetch(`${BASE_URL}/api/teacher/${uid}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("profile").innerText =
+        JSON.stringify(data, null, 2);
+    });
+
+  // Load invites
+  fetch(`${BASE_URL}/api/invite/teacher/${uid}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("invites").innerText =
+        JSON.stringify(data, null, 2);
+    });
+}
+</script>
+
+</body>
+</html>
