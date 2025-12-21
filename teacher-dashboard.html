@@ -35,11 +35,11 @@
           data.invites.forEach(invite => {
             const li = document.createElement("li");
             li.innerHTML = `
-              Institute UID: <b>${invite.instituteUid}</b> |
+              Institute UID: <b>${invite.fromUid}</b> |
               Status: <b>${invite.status}</b>
               <br>
-              <button onclick="respondInvite('${invite._id}', 'accepted')">Accept</button>
-              <button onclick="respondInvite('${invite._id}', 'rejected')">Reject</button>
+              <button onclick="acceptInvite('${invite._id}')">Accept</button>
+              <button onclick="rejectInvite('${invite._id}')">Reject</button>
               <hr>
             `;
             list.appendChild(li);
@@ -51,22 +51,29 @@
         });
     }
 
-    function respondInvite(inviteId, status) {
-      fetch(`${BASE_URL}/api/invite/respond`, {
+    function acceptInvite(inviteId) {
+      fetch(`${BASE_URL}/api/invite/accept`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ inviteId, status })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inviteId })
       })
       .then(res => res.json())
       .then(data => {
         document.getElementById("result").innerText = data.message;
         loadInvites();
+      });
+    }
+
+    function rejectInvite(inviteId) {
+      fetch(`${BASE_URL}/api/invite/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inviteId })
       })
-      .catch(() => {
-        document.getElementById("result").innerText =
-          "Error responding to invite";
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("result").innerText = data.message;
+        loadInvites();
       });
     }
   </script>
