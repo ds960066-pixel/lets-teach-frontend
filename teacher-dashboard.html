@@ -5,56 +5,66 @@
 </head>
 <body>
 
-  <h2>Teacher Dashboard</h2>
+<h2>Teacher Dashboard</h2>
 
-  <input id="uid" placeholder="Enter Teacher UID"><br><br>
+<input id="uid" placeholder="Enter your UID">
+<button onclick="loadDashboard()">Load Dashboard</button>
 
-  <button onclick="loadInvites()">Load Invites</button>
+<hr>
 
-  <ul id="inviteList"></ul>
+<h3>Profile</h3>
+<p id="profile"></p>
 
-  <script>
-  function loadInvites() {
-    const uid = document.getElementById("uid").value;
+<h3>Invites</h3>
+<ul id="invites"></ul>
 
-    fetch(`https://express-hello-world-uh96.onrender.com/api/invite/teacher/${uid}`)
-      .then(res => res.json())
-      .then(data => {
-        const list = document.getElementById("inviteList");
-        list.innerHTML = "";
+<script>
+function loadDashboard() {
+  const uid = document.getElementById("uid").value;
 
-        if (!data.invites || data.invites.length === 0) {
-          list.innerHTML = "<li>No invites yet</li>";
-          return;
-        }
-
-        data.invites.forEach(invite => {
-          const li = document.createElement("li");
-
-          li.innerHTML = `
-            Institute: ${invite.instituteUid}
-            | Status: ${invite.status}
-            <br>
-            <button onclick="respond('${invite._id}', 'accepted')">Accept</button>
-            <button onclick="respond('${invite._id}', 'rejected')">Reject</button>
-            <hr>
-          `;
-
-          list.appendChild(li);
-        });
-      });
-  }
-
-  function respond(inviteId, status) {
-    fetch("https://express-hello-world-uh96.onrender.com/api/invite/respond", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ inviteId, status })
-    })
+  // 1️⃣ Load profile
+  fetch(`https://express-hello-world-uh96.onrender.com/api/teacher/${uid}`)
     .then(res => res.json())
     .then(data => {
-      alert(data.message);
-      loadInvites();
+      if (!data.teacher) {
+        document.getElementById("profile").innerText = "Teacher not found";
+        return;
+      }
+      const t = data.teacher;
+      document.getElementById("profile").innerText =
+        `${t.name} | ${t.subject} | ${t.city}`;
     });
-  }
+
+  // 2️⃣ Load invites
+  fetch(`https://express-hello-world-uh96.onrender.com/api/invite/teacher/${uid}`)
+    .then(res => res.json())
+    .then(data => {
+      const ul = document.getElementById("invites");
+      ul.innerHTML = "";
+
+      data.invites.forEach(inv => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          From Institute: ${inv.instituteUid}
+          | Status: ${inv.status}
+          <button onclick="respond('${inv._id}','accepted')">Accept</button>
+          <button onclick="respond('${inv._id}','rejected')">Reject</button>
+        `;
+        ul.appendChild(li);
+      });
+    });
+}
+
+function respond(inviteId, status) {
+  fetch("https://express-hello-world-uh96.onrender.com/api/invite/respond", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ inviteId, status })
+  })
+  .then(res => res.json())
+  .then(data => alert(data.message));
+}
 </script>
+
+</body>
+</html>
