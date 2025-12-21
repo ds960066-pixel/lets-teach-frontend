@@ -5,66 +5,71 @@
 </head>
 <body>
 
-<h2>Teacher Dashboard</h2>
+  <h2>Teacher Dashboard</h2>
 
-<input id="uid" placeholder="Enter your UID">
-<button onclick="loadDashboard()">Load Dashboard</button>
+  <input id="teacherUid" placeholder="Enter Teacher UID">
+  <button onclick="loadInvites()">Load My Invites</button>
 
-<hr>
+  <h3>My Invites</h3>
+  <ul id="inviteList"></ul>
 
-<h3>Profile</h3>
-<p id="profile"></p>
+  <p id="result"></p>
 
-<h3>Invites</h3>
-<ul id="invites"></ul>
+  <script>
+    const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-<script>
-function loadDashboard() {
-  const uid = document.getElementById("uid").value;
+    function loadInvites() {
+      const uid = document.getElementById("teacherUid").value;
 
-  // 1️⃣ Load profile
-  fetch(`https://express-hello-world-uh96.onrender.com/api/teacher/${uid}`)
-    .then(res => res.json())
-    .then(data => {
-      if (!data.teacher) {
-        document.getElementById("profile").innerText = "Teacher not found";
-        return;
-      }
-      const t = data.teacher;
-      document.getElementById("profile").innerText =
-        `${t.name} | ${t.subject} | ${t.city}`;
-    });
+      fetch(`${BASE_URL}/api/invite/teacher/${uid}`)
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById("inviteList");
+          list.innerHTML = "";
 
-  // 2️⃣ Load invites
-  fetch(`https://express-hello-world-uh96.onrender.com/api/invite/teacher/${uid}`)
-    .then(res => res.json())
-    .then(data => {
-      const ul = document.getElementById("invites");
-      ul.innerHTML = "";
+          if (!data.invites || data.invites.length === 0) {
+            list.innerHTML = "<li>No invites yet</li>";
+            return;
+          }
 
-      data.invites.forEach(inv => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          From Institute: ${inv.instituteUid}
-          | Status: ${inv.status}
-          <button onclick="respond('${inv._id}','accepted')">Accept</button>
-          <button onclick="respond('${inv._id}','rejected')">Reject</button>
-        `;
-        ul.appendChild(li);
+          data.invites.forEach(invite => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+              Institute UID: <b>${invite.instituteUid}</b> |
+              Status: <b>${invite.status}</b>
+              <br>
+              <button onclick="respondInvite('${invite._id}', 'accepted')">Accept</button>
+              <button onclick="respondInvite('${invite._id}', 'rejected')">Reject</button>
+              <hr>
+            `;
+            list.appendChild(li);
+          });
+        })
+        .catch(() => {
+          document.getElementById("result").innerText =
+            "Error loading invites";
+        });
+    }
+
+    function respondInvite(inviteId, status) {
+      fetch(`${BASE_URL}/api/invite/respond`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ inviteId, status })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("result").innerText = data.message;
+        loadInvites();
+      })
+      .catch(() => {
+        document.getElementById("result").innerText =
+          "Error responding to invite";
       });
-    });
-}
-
-function respond(inviteId, status) {
-  fetch("https://express-hello-world-uh96.onrender.com/api/invite/respond", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ inviteId, status })
-  })
-  .then(res => res.json())
-  .then(data => alert(data.message));
-}
-</script>
+    }
+  </script>
 
 </body>
 </html>
