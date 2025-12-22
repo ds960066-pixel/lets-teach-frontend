@@ -1,28 +1,48 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <title>Send Invite | Lets Teach</title>
+</head>
 <body>
 
-<h3>Institute → Invite Teacher</h3>
+  <h2>Institute → Invite Teacher</h2>
 
-<input id="instituteUid" placeholder="Institute UID" />
-<input id="teacherUid" placeholder="Teacher UID" />
-<button onclick="sendInvite()">Send Invite</button>
+  <input id="fromType" value="institute"><br><br>
+  <input id="fromUid" placeholder="Institute UID"><br><br>
 
-<script>
-async function sendInvite() {
-  const instituteUid = document.getElementById("instituteUid").value;
-  const teacherUid = document.getElementById("teacherUid").value;
+  <input id="toType" value="teacher"><br><br>
+  <input id="toUid" placeholder="Teacher UID"><br><br>
 
-  const res = await fetch("/api/invite/create", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ instituteUid, teacherUid }),
-  });
+  <button onclick="sendInvite()">Send Invite</button>
 
-  const data = await res.json();
-  alert(data.message);
-}
-</script>
+  <p id="result"></p>
+
+  <script>
+    const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+
+    function sendInvite() {
+      fetch(`${BASE_URL}/api/invite/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          fromType: document.getElementById("fromType").value,
+          fromUid: document.getElementById("fromUid").value,
+          toType: document.getElementById("toType").value,
+          toUid: document.getElementById("toUid").value
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("result").innerText = data.message;
+      })
+      .catch(() => {
+        document.getElementById("result").innerText =
+          "Error connecting to backend";
+      });
+    }
+  </script>
 
 </body>
 </html>
