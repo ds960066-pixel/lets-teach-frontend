@@ -7,23 +7,33 @@
 
   <h2>Institute → Invite Teacher</h2>
 
-  <input id="instituteUid" placeholder="Institute UID"><br><br>
-  <input id="teacherUid" placeholder="Teacher UID"><br><br>
+  <label>Institute UID</label><br>
+  <input id="fromUid" placeholder="school321"><br><br>
+
+  <label>Teacher UID</label><br>
+  <input id="toUid" placeholder="demof12345"><br><br>
 
   <button onclick="sendInvite()">Send Invite</button>
 
   <p id="result"></p>
 
   <script>
+    const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+
     function sendInvite() {
-      fetch("https://express-hello-world-uh96.onrender.com/api/invite/create", {
+      const fromUid = document.getElementById("fromUid").value;
+      const toUid = document.getElementById("toUid").value;
+
+      fetch(`${BASE_URL}/api/invite/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          instituteUid: document.getElementById("instituteUid").value,
-          teacherUid: document.getElementById("teacherUid").value
+          fromType: "institute",
+          fromUid: fromUid,
+          toType: "teacher",
+          toUid: toUid
         })
       })
       .then(res => res.json())
@@ -31,13 +41,12 @@
         document.getElementById("result").innerText =
           data.message || "Invite sent";
       })
-      .catch(() => {
+      .catch(err => {
         document.getElementById("result").innerText =
-          "Error connecting to backend";
+          "Server error";
       });
     }
   </script>
 
 </body>
 </html>
-
