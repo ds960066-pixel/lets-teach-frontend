@@ -1,52 +1,28 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Send Invite | Lets Teach</title>
-</head>
 <body>
 
-  <h2>Institute → Invite Teacher</h2>
+<h3>Institute → Invite Teacher</h3>
 
-  <label>Institute UID</label><br>
-  <input id="fromUid" placeholder="school321"><br><br>
+<input id="instituteUid" placeholder="Institute UID" />
+<input id="teacherUid" placeholder="Teacher UID" />
+<button onclick="sendInvite()">Send Invite</button>
 
-  <label>Teacher UID</label><br>
-  <input id="toUid" placeholder="demof12345"><br><br>
+<script>
+async function sendInvite() {
+  const instituteUid = document.getElementById("instituteUid").value;
+  const teacherUid = document.getElementById("teacherUid").value;
 
-  <button onclick="sendInvite()">Send Invite</button>
+  const res = await fetch("/api/invite/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ instituteUid, teacherUid }),
+  });
 
-  <p id="result"></p>
-
-  <script>
-    const BASE_URL = "https://express-hello-world-uh96.onrender.com";
-
-    function sendInvite() {
-      const fromUid = document.getElementById("fromUid").value;
-      const toUid = document.getElementById("toUid").value;
-
-      fetch(`${BASE_URL}/api/invite/create`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          fromType: "institute",
-          fromUid: fromUid,
-          toType: "teacher",
-          toUid: toUid
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("result").innerText =
-          data.message || "Invite sent";
-      })
-      .catch(err => {
-        document.getElementById("result").innerText =
-          "Server error";
-      });
-    }
-  </script>
+  const data = await res.json();
+  alert(data.message);
+}
+</script>
 
 </body>
 </html>
