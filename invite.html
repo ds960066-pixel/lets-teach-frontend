@@ -1,60 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Send Invite | Lets Teach</title>
+  <title>Send Invite</title>
 </head>
 <body>
 
-<h2>Institute → Invite Teacher</h2>
+  <h2>Institute → Invite Teacher</h2>
 
-<label>From Type</label><br>
-<select id="fromType">
-  <option value="institute">Institute</option>
-  <option value="teacher">Teacher</option>
-</select><br><br>
+  <input id="instituteUid" placeholder="Institute UID (e.g. school321)">
+  <br><br>
 
-<input id="fromUid" placeholder="Your UID (e.g. school321)"><br><br>
+  <input id="teacherUid" placeholder="Teacher UID (e.g. demof12345)">
+  <br><br>
 
-<label>To Type</label><br>
-<select id="toType">
-  <option value="teacher">Teacher</option>
-  <option value="institute">Institute</option>
-</select><br><br>
+  <button onclick="sendInvite()">Send Invite</button>
 
-<input id="toUid" placeholder="Target UID (e.g. demof12345)"><br><br>
+  <p id="result"></p>
 
-<button onclick="sendInvite()">Send Invite</button>
+  <script>
+    const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-<p id="result"></p>
+    function sendInvite() {
+      const instituteUid = document.getElementById("instituteUid").value.trim();
+      const teacherUid = document.getElementById("teacherUid").value.trim();
 
-<script>
-const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+      if (!instituteUid || !teacherUid) {
+        document.getElementById("result").innerText = "All fields required";
+        return;
+      }
 
-function sendInvite() {
-  const fromType = document.getElementById("fromType").value.trim();
-  const fromUid  = document.getElementById("fromUid").value.trim();
-  const toType   = document.getElementById("toType").value.trim();
-  const toUid    = document.getElementById("toUid").value.trim();
-
-  if (!fromUid || !toUid) {
-    document.getElementById("result").innerText = "All fields required";
-    return;
-  }
-
-  fetch(`${BASE_URL}/api/invite/create`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ fromType, fromUid, toType, toUid })
-  })
-  .then(res => res.json())
-  .then(data => {
-    document.getElementById("result").innerText = data.message;
-  })
-  .catch(() => {
-    document.getElementById("result").innerText = "Server error";
-  });
-}
-</script>
+      fetch(`${BASE_URL}/api/invite/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          instituteUid,
+          teacherUid
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("result").innerText = data.message;
+      })
+      .catch(err => {
+        document.getElementById("result").innerText = "Error sending invite";
+      });
+    }
+  </script>
 
 </body>
 </html>
