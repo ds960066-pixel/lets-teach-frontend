@@ -1,67 +1,76 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Chat | Lets Teach</title>
+  <title>Lets Teach Chat</title>
 </head>
 <body>
 
-  <h2>Lets Teach Chat</h2>
+<h2>Chat</h2>
 
-  <input id="uid1" placeholder="Your UID"><br><br>
-  <input id="uid2" placeholder="Other UID"><br><br>
+<input id="uid1" placeholder="Your UID" value="demof12345">
+<input id="uid2" placeholder="Other UID" value="school321">
+<button onclick="loadChat()">Load Chat</button>
 
-  <textarea id="message" placeholder="Type message"></textarea><br><br>
+<hr>
 
-  <button onclick="sendMessage()">Send</button>
-  <button onclick="loadChat()">Load Chat</button>
+<div id="chatBox" style="border:1px solid #ccc;height:300px;overflow-y:scroll;"></div>
 
-  <hr>
+<br>
 
-  <div id="chatBox"></div>
+<input id="message" placeholder="Type message">
+<button onclick="sendMessage()">Send</button>
 
-  <script>
-    const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+<p id="status"></p>
 
-    function sendMessage() {
-      fetch(`${BASE_URL}/api/chat/send`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          senderUid: document.getElementById("uid1").value,
-          receiverUid: document.getElementById("uid2").value,
-          text: document.getElementById("message").value
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        alert(data.message);
-        document.getElementById("message").value = "";
-        loadChat();
-      })
-      .catch(() => alert("Error sending message"));
-    }
+<script>
+const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-    function loadChat() {
-      const uid1 = document.getElementById("uid1").value;
-      const uid2 = document.getElementById("uid2").value;
+function loadChat() {
+  const uid1 = uid1Input().value;
+  const uid2 = uid2Input().value;
 
-      fetch(`${BASE_URL}/api/chat/${uid1}/${uid2}`)
-        .then(res => res.json())
-        .then(data => {
-          const box = document.getElementById("chatBox");
-          box.innerHTML = "";
+  fetch(`${BASE_URL}/api/chat/${uid1}/${uid2}`)
+    .then(res => res.json())
+    .then(data => {
+      const box = document.getElementById("chatBox");
+      box.innerHTML = "";
 
-          data.messages.forEach(msg => {
-            const p = document.createElement("p");
-            p.innerHTML = `<b>${msg.senderUid}:</b> ${msg.text}`;
-            box.appendChild(p);
-          });
-        })
-        .catch(() => alert("Error loading chat"));
-    }
-  </script>
+      data.messages.forEach(m => {
+        box.innerHTML += `<p><b>${m.senderUid}:</b> ${m.text}</p>`;
+      });
+
+      box.scrollTop = box.scrollHeight;
+    });
+}
+
+function sendMessage() {
+  const uid1 = uid1Input().value;
+  const uid2 = uid2Input().value;
+  const text = document.getElementById("message").value;
+
+  fetch(`${BASE_URL}/api/chat/send`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      senderUid: uid1,
+      receiverUid: uid2,
+      text
+    })
+  })
+  .then(res => res.json())
+  .then(() => {
+    document.getElementById("message").value = "";
+    loadChat();
+  });
+}
+
+function uid1Input() {
+  return document.getElementById("uid1");
+}
+function uid2Input() {
+  return document.getElementById("uid2");
+}
+</script>
 
 </body>
 </html>
