@@ -1,53 +1,66 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Send Invite</title>
+  <title>Invite</title>
 </head>
 <body>
 
-  <h2>Institute → Invite Teacher</h2>
+<h2>Institute → Invite Teacher</h2>
 
-  <input id="instituteUid" placeholder="Institute UID (e.g. school321)">
-  <br><br>
+<label>From Type</label><br>
+<select id="fromType">
+  <option value="institute">Institute</option>
+</select><br><br>
 
-  <input id="teacherUid" placeholder="Teacher UID (e.g. demof12345)">
-  <br><br>
+<label>Institute UID</label><br>
+<input id="fromUid" value="school321"><br><br>
 
-  <button onclick="sendInvite()">Send Invite</button>
+<label>To Type</label><br>
+<select id="toType">
+  <option value="teacher">Teacher</option>
+</select><br><br>
 
-  <p id="result"></p>
+<label>Teacher UID</label><br>
+<input id="toUid" value="demof12345"><br><br>
 
-  <script>
-    const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+<button onclick="sendInvite()">Send Invite</button>
 
-    function sendInvite() {
-      const instituteUid = document.getElementById("instituteUid").value.trim();
-      const teacherUid = document.getElementById("teacherUid").value.trim();
+<p id="result"></p>
 
-      if (!instituteUid || !teacherUid) {
-        document.getElementById("result").innerText = "All fields required";
-        return;
-      }
+<script>
+const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-      fetch(`${BASE_URL}/api/invite/create`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          instituteUid,
-          teacherUid
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("result").innerText = data.message;
-      })
-      .catch(err => {
-        document.getElementById("result").innerText = "Error sending invite";
-      });
-    }
-  </script>
+function sendInvite() {
+  const fromType = document.getElementById("fromType").value;
+  const fromUid  = document.getElementById("fromUid").value;
+  const toType   = document.getElementById("toType").value;
+  const toUid    = document.getElementById("toUid").value;
+
+  if (!fromType || !fromUid || !toType || !toUid) {
+    document.getElementById("result").innerText = "All fields required";
+    return;
+  }
+
+  fetch(`${BASE_URL}/api/invite/create`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      fromType,
+      fromUid,
+      toType,
+      toUid
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("result").innerText =
+      data.message || JSON.stringify(data);
+  })
+  .catch(err => {
+    document.getElementById("result").innerText = "Server error";
+  });
+}
+</script>
 
 </body>
 </html>
