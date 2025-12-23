@@ -31,12 +31,12 @@
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
 function sendInvite() {
-  const fromType = document.getElementById("fromType").value;
-  const fromUid  = document.getElementById("fromUid").value;
-  const toType   = document.getElementById("toType").value;
-  const toUid    = document.getElementById("toUid").value;
+  const fromType = document.getElementById("fromType").value.trim();
+  const fromUid  = document.getElementById("fromUid").value.trim();
+  const toType   = document.getElementById("toType").value.trim();
+  const toUid    = document.getElementById("toUid").value.trim();
 
-  if (!fromType || !fromUid || !toType || !toUid) {
+  if (!fromUid || !toUid) {
     document.getElementById("result").innerText = "All fields required";
     return;
   }
