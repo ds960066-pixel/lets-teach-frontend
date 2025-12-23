@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat | Lets Teach</title>
+</head>
+<body>
+
+  <h2>Lets Teach Chat</h2>
+
+  <input id="uid1" placeholder="Your UID"><br><br>
+  <input id="uid2" placeholder="Other UID"><br><br>
+
+  <textarea id="message" placeholder="Type message"></textarea><br><br>
+
+  <button onclick="sendMessage()">Send</button>
+  <button onclick="loadChat()">Load Chat</button>
+
+  <hr>
+
+  <div id="chatBox"></div>
+
+  <script>
+    const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+
+    function sendMessage() {
+      fetch(`${BASE_URL}/api/chat/send`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          senderUid: document.getElementById("uid1").value,
+          receiverUid: document.getElementById("uid2").value,
+          text: document.getElementById("message").value
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        document.getElementById("message").value = "";
+        loadChat();
+      })
+      .catch(() => alert("Error sending message"));
+    }
+
+    function loadChat() {
+      const uid1 = document.getElementById("uid1").value;
+      const uid2 = document.getElementById("uid2").value;
+
+      fetch(`${BASE_URL}/api/chat/${uid1}/${uid2}`)
+        .then(res => res.json())
+        .then(data => {
+          const box = document.getElementById("chatBox");
+          box.innerHTML = "";
+
+          data.messages.forEach(msg => {
+            const p = document.createElement("p");
+            p.innerHTML = `<b>${msg.senderUid}:</b> ${msg.text}`;
+            box.appendChild(p);
+          });
+        })
+        .catch(() => alert("Error loading chat"));
+    }
+  </script>
+
+</body>
+</html>
