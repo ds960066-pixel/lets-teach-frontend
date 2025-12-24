@@ -15,17 +15,17 @@
 
   <p id="result"></p>
 
- <script>
+<script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
 function loadInvites() {
   const uid = document.getElementById("teacherUid").value;
+  const list = document.getElementById("inviteList");
+  list.innerHTML = "";
 
   fetch(`${BASE_URL}/api/invite/teacher/${uid}`)
     .then(res => res.json())
     .then(data => {
-      const list = document.getElementById("inviteList");
-      list.innerHTML = "";
 
       if (!data.invites || data.invites.length === 0) {
         list.innerHTML = "<li>No invites yet</li>";
@@ -34,15 +34,35 @@ function loadInvites() {
 
       data.invites.forEach(invite => {
         const li = document.createElement("li");
+
         li.innerHTML = `
-          Institute UID: <b>${invite.fromUid}</b> |
+          From Institute: <b>${invite.fromUid}</b> |
           Status: <b>${invite.status}</b><br>
-          <button onclick="acceptInvite('${invite._id}')">Accept</button>
-          <button onclick="rejectInvite('${invite._id}')">Reject</button>
-          <hr>
         `;
+
+        // 👉 Pending invite
+        if (invite.status === "pending") {
+          li.innerHTML += `
+            <button onclick="acceptInvite('${invite._id}')">Accept</button>
+            <button onclick="rejectInvite('${invite._id}')">Reject</button>
+          `;
+        }
+
+        // 👉 Accepted invite → Chat
+        if (invite.status === "accepted") {
+          li.innerHTML += `
+            <a href="chat.html?me=${uid}&other=${invite.fromUid}">
+              <button>Open Chat</button>
+            </a>
+          `;
+        }
+
+        li.innerHTML += "<hr>";
         list.appendChild(li);
       });
+    })
+    .catch(() => {
+      list.innerHTML = "<li>Error loading invites</li>";
     });
 }
 
