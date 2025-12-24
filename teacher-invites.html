@@ -7,49 +7,68 @@
 
   <h2>My Invites</h2>
 
-  <input id="uid" placeholder="Teacher UID"><br><br>
+  <input id="uid" placeholder="Teacher UID (e.g. demof12345)">
+  <br><br>
   <button onclick="loadInvites()">Load Invites</button>
 
   <ul id="inviteList"></ul>
 
   <script>
-    function loadInvites() {
-      const uid = document.getElementById("uid").value;
+    const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-      fetch(
-        `https://express-hello-world-uh96.onrender.com/api/invite/teacher/${uid}`
-      )
+    function loadInvites() {
+      const uid = document.getElementById("uid").value.trim();
+      if (!uid) {
+        alert("Enter Teacher UID");
+        return;
+      }
+
+      fetch(`${BASE_URL}/api/invite/teacher/${uid}`)
         .then(res => res.json())
         .then(data => {
           const list = document.getElementById("inviteList");
           list.innerHTML = "";
 
+          if (!data.invites || data.invites.length === 0) {
+            list.innerHTML = "<li>No invites yet</li>";
+            return;
+          }
+
           data.invites.forEach(invite => {
             const li = document.createElement("li");
             li.innerHTML = `
-              Institute UID: ${invite.instituteUid}
-              | Status: ${invite.status}
+              Institute UID: <b>${invite.fromUid}</b>
+              | Status: <b>${invite.status}</b>
+              <br>
               <button onclick="respond('${invite._id}', 'accepted')">Accept</button>
               <button onclick="respond('${invite._id}', 'rejected')">Reject</button>
+              <hr>
             `;
             list.appendChild(li);
           });
+        })
+        .catch(() => {
+          alert("Error loading invites");
         });
     }
 
     function respond(inviteId, status) {
-      fetch("https://express-hello-world-uh96.onrender.com/api/invite/respond", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ inviteId, status })
+      const url =
+        status === "accepted"
+          ? `/api/invite/accept/${inviteId}`
+          : `/api/invite/reject/${inviteId}`;
+
+      fetch(`${BASE_URL}${url}`, {
+        method: "POST"
       })
-      .then(res => res.json())
-      .then(data => {
-        alert(data.message);
-        loadInvites();
-      });
+        .then(res => res.json())
+        .then(() => {
+          alert(`Invite ${status}`);
+          loadInvites();
+        })
+        .catch(() => {
+          alert("Action failed");
+        });
     }
   </script>
 
