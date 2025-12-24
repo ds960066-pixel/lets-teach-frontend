@@ -1,75 +1,87 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Lets Teach Chat</title>
+  <title>Chat | Lets Teach</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    #chatBox {
+      background: #fff;
+      padding: 10px;
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+    }
+    .me {
+      text-align: right;
+      color: green;
+      margin: 5px 0;
+    }
+    .other {
+      text-align: left;
+      color: blue;
+      margin: 5px 0;
+    }
+  </style>
 </head>
 <body>
 
-<h2>Chat</h2>
+<h2>Lets Teach Chat</h2>
 
-<input id="uid1" placeholder="Your UID" value="demof12345">
-<input id="uid2" placeholder="Other UID" value="school321">
-<button onclick="loadChat()">Load Chat</button>
+<input id="senderUid" placeholder="Your UID"><br><br>
+<input id="receiverUid" placeholder="Receiver UID"><br><br>
 
-<hr>
-
-<div id="chatBox" style="border:1px solid #ccc;height:300px;overflow-y:scroll;"></div>
-
-<br>
+<div id="chatBox"></div>
 
 <input id="message" placeholder="Type message">
 <button onclick="sendMessage()">Send</button>
 
-<p id="status"></p>
-
 <script>
-const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+  const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-function loadChat() {
-  const uid1 = uid1Input().value;
-  const uid2 = uid2Input().value;
+  function loadChat() {
+    const sender = senderUid.value;
+    const receiver = receiverUid.value;
 
-  fetch(`${BASE_URL}/api/chat/${uid1}/${uid2}`)
-    .then(res => res.json())
-    .then(data => {
-      const box = document.getElementById("chatBox");
-      box.innerHTML = "";
+    if (!sender || !receiver) return;
 
-      data.messages.forEach(m => {
-        box.innerHTML += `<p><b>${m.senderUid}:</b> ${m.text}</p>`;
+    fetch(`${BASE_URL}/api/chat/${sender}/${receiver}`)
+      .then(res => res.json())
+      .then(data => {
+        const box = document.getElementById("chatBox");
+        box.innerHTML = "";
+        data.messages.forEach(m => {
+          const div = document.createElement("div");
+          div.className = m.senderUid === sender ? "me" : "other";
+          div.innerText = m.text;
+          box.appendChild(div);
+        });
+        box.scrollTop = box.scrollHeight;
       });
+  }
 
-      box.scrollTop = box.scrollHeight;
-    });
-}
-
-function sendMessage() {
-  const uid1 = uid1Input().value;
-  const uid2 = uid2Input().value;
-  const text = document.getElementById("message").value;
-
-  fetch(`${BASE_URL}/api/chat/send`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      senderUid: uid1,
-      receiverUid: uid2,
-      text
+  function sendMessage() {
+    fetch(`${BASE_URL}/api/chat/send`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        senderUid: senderUid.value,
+        receiverUid: receiverUid.value,
+        text: message.value
+      })
     })
-  })
-  .then(res => res.json())
-  .then(() => {
-    document.getElementById("message").value = "";
-    loadChat();
-  });
-}
+    .then(res => res.json())
+    .then(() => {
+      message.value = "";
+      loadChat();
+    });
+  }
 
-function uid1Input() {
-  return document.getElementById("uid1");
-}
-function uid2Input() {
-  return document.getElementById("uid2");
-}
+  setInterval(loadChat, 3000);
 </script>
 
 </body>
