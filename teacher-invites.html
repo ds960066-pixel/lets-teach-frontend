@@ -7,7 +7,7 @@
 
 <h2>My Invites</h2>
 
-<input id="uid" placeholder="Teacher UID">
+<input id="uid" placeholder="Teacher UID" />
 <button onclick="loadInvites()">Load Invites</button>
 
 <ul id="inviteList"></ul>
@@ -17,7 +17,6 @@ const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
 function loadInvites() {
   const uid = document.getElementById("uid").value.trim();
-  if (!uid) return alert("Enter UID");
 
   fetch(`${BASE_URL}/api/invite/teacher/${uid}`)
     .then(res => res.json())
@@ -34,31 +33,26 @@ function loadInvites() {
         const li = document.createElement("li");
         li.innerHTML = `
           From Institute: <b>${invite.fromUid}</b>
-          | Status: <b>${invite.status}</b>
-          <br>
-          <button onclick="acceptInvite('${invite._id}')">Accept</button>
-          <button onclick="rejectInvite('${invite._id}')">Reject</button>
-          <hr>
+          | Status: ${invite.status}
+          <button onclick="respond('${invite._id}','accepted')">Accept</button>
+          <button onclick="respond('${invite._id}','rejected')">Reject</button>
         `;
         list.appendChild(li);
       });
     });
 }
 
-function acceptInvite(id) {
-  fetch(`${BASE_URL}/api/invite/accept/${id}`, { method: "POST" })
-    .then(() => {
-      alert("Invite accepted");
-      loadInvites();
-    });
-}
-
-function rejectInvite(id) {
-  fetch(`${BASE_URL}/api/invite/reject/${id}`, { method: "POST" })
-    .then(() => {
-      alert("Invite rejected");
-      loadInvites();
-    });
+function respond(inviteId, status) {
+  fetch(`${BASE_URL}/api/invite/respond`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ inviteId, status })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message);
+    loadInvites();
+  });
 }
 </script>
 
