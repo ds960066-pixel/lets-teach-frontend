@@ -82,6 +82,43 @@ function rejectInvite(id) {
   .then(() => loadInvites());
 }
 </script>
+<h3>My Connections (Chat Enabled)</h3>
+<button onclick="loadConnections()">Load My Chats</button>
+<ul id="chatList"></ul>
+
+<script>
+function loadConnections() {
+  const uid = document.getElementById("teacherUid").value;
+
+  fetch(`${BASE_URL}/api/invite/accepted/teacher/${uid}`)
+    .then(res => res.json())
+    .then(data => {
+      const list = document.getElementById("chatList");
+      list.innerHTML = "";
+
+      if (!data.connections || data.connections.length === 0) {
+        list.innerHTML = "<li>No active chats yet</li>";
+        return;
+      }
+
+      data.connections.forEach(c => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          Connected with Institute: <b>${c.fromUid}</b>
+          <br>
+          <button onclick="openChat('${c.fromUid}')">Open Chat</button>
+          <hr>
+        `;
+        list.appendChild(li);
+      });
+    });
+}
+
+function openChat(instituteUid) {
+  // TEMP (next step me real chat)
+  alert("Chat opening with " + instituteUid);
+}
+</script>
 
 </body>
 </html>
