@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Teacher Chat | Lets Teach</title>
+</head>
+<body>
+
+<h2>Teacher Chat</h2>
+
+<input id="teacherUid" placeholder="Teacher UID" value="demof12345"><br><br>
+<input id="instituteUid" placeholder="Institute UID"><br><br>
+
+<textarea id="message" placeholder="Type message"></textarea><br><br>
+<button onclick="sendMessage()">Send</button>
+
+<h3>Chat</h3>
+<ul id="chatBox"></ul>
+
+<script>
+const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+
+function sendMessage() {
+  fetch(`${BASE_URL}/api/chat/send`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      senderUid: teacherUid.value,
+      receiverUid: instituteUid.value,
+      text: message.value
+    })
+  })
+  .then(res => res.json())
+  .then(() => {
+    message.value = "";
+    loadChat();
+  });
+}
+
+function loadChat() {
+  fetch(`${BASE_URL}/api/chat/${teacherUid.value}/${instituteUid.value}`)
+    .then(res => res.json())
+    .then(data => {
+      const box = document.getElementById("chatBox");
+      box.innerHTML = "";
+      data.messages.forEach(m => {
+        const li = document.createElement("li");
+        li.innerText = `${m.senderUid}: ${m.text}`;
+        box.appendChild(li);
+      });
+    });
+}
+</script>
+
+</body>
+</html>
