@@ -5,15 +5,15 @@
 </head>
 <body>
 
-  <h2>Teacher Dashboard</h2>
+<h2>Teacher Dashboard</h2>
 
-  <input id="teacherUid" placeholder="Enter Teacher UID">
-  <button onclick="loadInvites()">Load My Invites</button>
+<input id="teacherUid" placeholder="Enter Teacher UID">
+<button onclick="loadInvites()">Load My Invites</button>
 
-  <h3>My Invites</h3>
-  <ul id="inviteList"></ul>
+<h3>My Invites</h3>
+<ul id="inviteList"></ul>
 
-  <p id="result"></p>
+<p id="result"></p>
 
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
@@ -36,11 +36,11 @@ function loadInvites() {
         const li = document.createElement("li");
 
         li.innerHTML = `
-          From Institute: <b>${invite.fromUid}</b> |
+          From Institute: <b>${invite.fromUid}</b><br>
           Status: <b>${invite.status}</b><br>
         `;
 
-        // 👉 Pending invite
+        /* PENDING */
         if (invite.status === "pending") {
           li.innerHTML += `
             <button onclick="acceptInvite('${invite._id}')">Accept</button>
@@ -48,10 +48,11 @@ function loadInvites() {
           `;
         }
 
-        // 👉 Accepted invite → Chat
+        /* ACCEPTED → CHAT */
         if (invite.status === "accepted") {
+          const roomId = `${uid}_${invite.fromUid}`;
           li.innerHTML += `
-            <a href="chat.html?me=${uid}&other=${invite.fromUid}">
+            <a href="chat.html?roomId=${roomId}&me=${uid}&other=${invite.fromUid}">
               <button>Open Chat</button>
             </a>
           `;
@@ -80,43 +81,6 @@ function rejectInvite(id) {
   })
   .then(res => res.json())
   .then(() => loadInvites());
-}
-</script>
-<h3>My Connections (Chat Enabled)</h3>
-<button onclick="loadConnections()">Load My Chats</button>
-<ul id="chatList"></ul>
-
-<script>
-function loadConnections() {
-  const uid = document.getElementById("teacherUid").value;
-
-  fetch(`${BASE_URL}/api/invite/accepted/teacher/${uid}`)
-    .then(res => res.json())
-    .then(data => {
-      const list = document.getElementById("chatList");
-      list.innerHTML = "";
-
-      if (!data.connections || data.connections.length === 0) {
-        list.innerHTML = "<li>No active chats yet</li>";
-        return;
-      }
-
-      data.connections.forEach(c => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          Connected with Institute: <b>${c.fromUid}</b>
-          <br>
-          <button onclick="openChat('${c.fromUid}')">Open Chat</button>
-          <hr>
-        `;
-        list.appendChild(li);
-      });
-    });
-}
-
-function openChat(instituteUid) {
-  // TEMP (next step me real chat)
-  alert("Chat opening with " + instituteUid);
 }
 </script>
 
