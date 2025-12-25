@@ -39,6 +39,16 @@
 
 <input id="message" placeholder="Type message">
 <button onclick="sendMessage()">Send</button>
+<script>
+const params = new URLSearchParams(window.location.search);
+
+roomId.value = params.get("roomId");
+senderType.value = params.get("senderType");
+senderUid.value = params.get("senderUid");
+receiverUid.value = params.get("receiverUid");
+
+load();
+</script>
 
 <script>
   const BASE_URL = "https://express-hello-world-uh96.onrender.com";
