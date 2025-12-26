@@ -2,19 +2,34 @@
 <html>
 <head>
   <title>Lets Teach Live Chat</title>
+
+  <!-- Socket.IO CDN -->
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
   <style>
-    body { font-family: Arial; background:#f4f4f4; padding:20px; }
-    #chatBox {
-      background:#fff;
-      height:300px;
-      overflow-y:auto;
-      padding:10px;
-      border:1px solid #ccc;
-      margin-bottom:10px;
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
     }
-    .me { text-align:right; color:green; margin:5px; }
-    .other { text-align:left; color:blue; margin:5px; }
+    #chatBox {
+      background: #fff;
+      padding: 10px;
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+    }
+    .me {
+      text-align: right;
+      color: green;
+      margin: 5px 0;
+    }
+    .other {
+      text-align: left;
+      color: blue;
+      margin: 5px 0;
+    }
   </style>
 </head>
 
@@ -22,9 +37,9 @@
 
 <h2>Lets Teach – Live Chat</h2>
 
+<!-- UID fields (auto-fill honge) -->
 <input id="myUid" placeholder="My UID"><br><br>
 <input id="otherUid" placeholder="Other UID"><br><br>
-<button onclick="join()">Join Chat</button>
 
 <div id="chatBox"></div>
 
@@ -32,37 +47,45 @@
 <button onclick="send()">Send</button>
 
 <script>
-const socket = io("https://express-hello-world-uh96.onrender.com");
-let roomId = "";
+  const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+  const socket = io(BASE_URL);
+  let roomId = "";
 
-function join() {
-  const me = myUid.value;
-  const other = otherUid.value;
-  if (!me || !other) return alert("UID missing");
+  // ---------- AUTO UID FROM URL ----------
+  const params = new URLSearchParams(window.location.search);
+  const me = params.get("me");
+  const other = params.get("other");
 
-  roomId = me + "_" + other;
-  socket.emit("joinRoom", roomId);
-}
+  if (me && other) {
+    document.getElementById("myUid").value = me;
+    document.getElementById("otherUid").value = other;
 
-function send() {
-  if (!msg.value.trim()) return;
+    roomId = me + "_" + other;
+    socket.emit("joinRoom", roomId);
+  }
 
-  socket.emit("chatMessage", {
-    roomId,
-    sender: myUid.value,
-    text: msg.value
+  // ---------- SEND MESSAGE ----------
+  function send() {
+    const text = msg.value.trim();
+    if (!text || !roomId) return;
+
+    socket.emit("chatMessage", {
+      roomId: roomId,
+      sender: myUid.value,
+      text: text
+    });
+
+    msg.value = "";
+  }
+
+  // ---------- RECEIVE MESSAGE ----------
+  socket.on("chatMessage", (data) => {
+    const div = document.createElement("div");
+    div.className = data.sender === myUid.value ? "me" : "other";
+    div.innerText = data.text;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
   });
-
-  msg.value = "";
-}
-
-socket.on("chatMessage", (data) => {
-  const div = document.createElement("div");
-  div.className = data.sender === myUid.value ? "me" : "other";
-  div.innerText = data.text;
-  chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
-});
 </script>
 
 </body>
