@@ -2,37 +2,31 @@
 <html>
 <head>
   <title>Teacher Dashboard | Lets Teach</title>
-  <meta charset="UTF-8">
 </head>
 <body>
 
 <h2>Teacher Dashboard</h2>
 
-<input id="teacherUid" placeholder="Enter Teacher UID (eg: demof12345)">
+<!-- FIXED UID (NO MISMATCH) -->
+<input id="teacherUid" value="demof12345" readonly>
 <button onclick="loadInvites()">Load My Invites</button>
 
 <h3>My Invites</h3>
 <ul id="inviteList"></ul>
 
-<p id="result"></p>
-
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-/* ---------------- LOAD INVITES ---------------- */
 function loadInvites() {
   const uid = document.getElementById("teacherUid").value;
   const list = document.getElementById("inviteList");
-  list.innerHTML = "";
-
-  if (!uid) {
-    list.innerHTML = "<li>Please enter UID</li>";
-    return;
-  }
+  list.innerHTML = "Loading...";
 
   fetch(`${BASE_URL}/api/invite/teacher/${uid}`)
     .then(res => res.json())
     .then(data => {
+      console.log("Invites:", data.invites);
+      list.innerHTML = "";
 
       if (!data.invites || data.invites.length === 0) {
         list.innerHTML = "<li>No invites yet</li>";
@@ -43,18 +37,22 @@ function loadInvites() {
         const li = document.createElement("li");
 
         li.innerHTML = `
-          <b>Institute UID:</b> ${invite.fromUid}<br>
+          <b>From Institute:</b> ${invite.fromUid}<br>
           <b>Status:</b> ${invite.status}<br>
         `;
 
-        /* ---- PENDING INVITE ---- */
         if (invite.status === "pending") {
           li.innerHTML += `
-            <button onclick="acceptInvite('${invite._id}', '${invite.fromUid}')">
-              Accept
-            </button>
-            <button onclick="rejectInvite('${invite._id}')">
-              Reject
+            <button onclick="acceptInvite('${invite._id}')">Accept</button>
+            <button onclick="rejectInvite('${invite._id}')">Reject</button>
+          `;
+        }
+
+        if (invite.status === "accepted") {
+          li.innerHTML += `
+            <br>
+            <button onclick="openChat('${uid}','${invite.fromUid}')">
+              Open Chat
             </button>
           `;
         }
@@ -62,22 +60,24 @@ function loadInvites() {
         li.innerHTML += "<hr>";
         list.appendChild(li);
       });
-    })
-    .catch(() => {
-      list.innerHTML = "<li>Error loading invites</li>";
     });
 }
 
-/* ---------------- ACCEPT INVITE ---------------- */
-function acceptInvite(inviteId, instituteUid) {
-  const teacherUid = document.getElementById("teacherUid").value;
+function acceptInvite(id) {
+  fetch(`${BASE_URL}/api/invite/accept/${id}`, { method: "POST" })
+    .then(() => setTimeout(loadInvites, 500));
+}
 
-  fetch(`${BASE_URL}/api/invite/accept/${inviteId}`, {
-    method: "POST"
-  })
-  .then(res => res.json())
-  .then(() => {
-    // ✅ DIRECT CHAT OPEN
-    window.location.href =
-      `chat.html?senderUid=${teacherUid}&receiverUid=${instituteUid}`;
-  }
+function rejectInvite(id) {
+  fetch(`${BASE_URL}/api/invite/reject/${id}`, { method: "POST" })
+    .then(() => setTimeout(loadInvites, 500));
+}
+
+function openChat(me, other) {
+  window.location.href =
+    `chat.html?senderUid=${me}&receiverUid=${other}`;
+}
+</script>
+
+</body>
+</html>
