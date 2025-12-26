@@ -40,7 +40,7 @@ function loadInvites() {
           Status: <b>${invite.status}</b><br>
         `;
 
-        /* PENDING */
+        // PENDING
         if (invite.status === "pending") {
           li.innerHTML += `
             <button onclick="acceptInvite('${invite._id}')">Accept</button>
@@ -48,9 +48,9 @@ function loadInvites() {
           `;
         }
 
-        /* ACCEPTED → CHAT */
+        // ACCEPTED → CHAT
         if (invite.status === "accepted") {
-          const roomId = `${uid}_${invite.fromUid}`;
+          const roomId = [uid, invite.fromUid].sort().join("_");
           li.innerHTML += `
             <a href="chat.html?roomId=${roomId}&me=${uid}&other=${invite.fromUid}">
               <button>Open Chat</button>
@@ -68,19 +68,13 @@ function loadInvites() {
 }
 
 function acceptInvite(id) {
-  fetch(`${BASE_URL}/api/invite/accept/${id}`, {
-    method: "POST"
-  })
-  .then(res => res.json())
-  .then(() => loadInvites());
+  fetch(`${BASE_URL}/api/invite/accept/${id}`, { method: "POST" })
+    .then(() => loadInvites());
 }
 
 function rejectInvite(id) {
-  fetch(`${BASE_URL}/api/invite/reject/${id}`, {
-    method: "POST"
-  })
-  .then(res => res.json())
-  .then(() => loadInvites());
+  fetch(`${BASE_URL}/api/invite/reject/${id}`, { method: "POST" })
+    .then(() => loadInvites());
 }
 </script>
 
