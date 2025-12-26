@@ -82,12 +82,46 @@
 </div>
 
 <script>
-  const data = JSON.parse(localStorage.getItem("teacherProfile"));
+  function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+  }
 
-  if (!data) {
-    alert("No teacher data found. Please register first.");
-    window.location.href = "teacher.html";
+  const username = getQueryParam("u");
+
+  // 1️⃣ Try public link data (future backend)
+  if (username) {
+    // TEMP: demo public data
+    const publicProfiles = {
+      rahul: {
+        name: "Rahul Sharma",
+        phone: "9876543210",
+        city: "Delhi",
+        subject: "Mathematics",
+        experience: "5"
+      }
+    };
+
+    const data = publicProfiles[username];
+
+    if (!data) {
+      alert("Public profile not found");
+    } else {
+      loadProfile(data);
+    }
+
   } else {
+    // 2️⃣ Fallback to localStorage (registered user)
+    const localData = JSON.parse(localStorage.getItem("teacherProfile"));
+    if (!localData) {
+      alert("No profile data found");
+      window.location.href = "teacher.html";
+    } else {
+      loadProfile(localData);
+    }
+  }
+
+  function loadProfile(data) {
     document.getElementById("name").innerText = data.name;
     document.getElementById("phone").innerText = data.phone;
     document.getElementById("city").innerText = data.city;
