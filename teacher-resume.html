@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Teacher Portfolio | Lets Teach</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #ececec;
+      padding: 20px;
+    }
+
+    .resume {
+      background: white;
+      max-width: 800px;
+      margin: auto;
+      padding: 30px;
+      border-radius: 6px;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+      color: #2e86de;
+    }
+
+    h3 {
+      border-bottom: 2px solid #2e86de;
+      padding-bottom: 5px;
+      margin-top: 25px;
+    }
+
+    p {
+      line-height: 1.6;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #d6eaf8;
+      padding: 6px 10px;
+      margin: 5px 5px 0 0;
+      border-radius: 4px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 15px;
+      background: #27ae60;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="resume">
+
+  <h1 id="name">Teacher Name</h1>
+  <p><b>📞 Phone:</b> <span id="phone"></span></p>
+  <p><b>📍 City:</b> <span id="city"></span></p>
+
+  <h3>Professional Summary</h3>
+  <p id="summary">
+    Dedicated and passionate teacher with <span id="experience"></span> years of experience
+    in delivering quality education and helping students achieve academic success.
+  </p>
+
+  <h3>Subject Expertise</h3>
+  <div class="tag" id="subject"></div>
+
+  <h3>Why Choose Me?</h3>
+  <ul>
+    <li>Student-focused teaching approach</li>
+    <li>Clear concept explanation</li>
+    <li>Regular assessments & doubt sessions</li>
+    <li>Online & offline teaching support</li>
+  </ul>
+
+  <button onclick="window.print()">Download Resume (PDF)</button>
+
+</div>
+
+<script>
+  /* TEMP DATA – baad me backend / login se aayega */
+  document.getElementById("name").innerText = "Rahul Sharma";
+  document.getElementById("phone").innerText = "9876543210";
+  document.getElementById("city").innerText = "Delhi";
+  document.getElementById("subject").innerText = "Mathematics";
+  document.getElementById("experience").innerText = "5";
+</script>
+
+</body>
+</html>
