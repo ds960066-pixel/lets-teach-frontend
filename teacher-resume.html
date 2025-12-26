@@ -60,8 +60,9 @@
   <p><b>📍 City:</b> <span id="city"></span></p>
 
   <h3>Professional Summary</h3>
-  <p id="summary">
-    Dedicated and passionate teacher with <span id="experience"></span> years of experience
+  <p>
+    Dedicated and passionate teacher with
+    <span id="experience"></span> years of experience
     in delivering quality education and helping students achieve academic success.
   </p>
 
@@ -81,12 +82,18 @@
 </div>
 
 <script>
-  /* TEMP DATA – baad me backend / login se aayega */
-  document.getElementById("name").innerText = "Rahul Sharma";
-  document.getElementById("phone").innerText = "9876543210";
-  document.getElementById("city").innerText = "Delhi";
-  document.getElementById("subject").innerText = "Mathematics";
-  document.getElementById("experience").innerText = "5";
+  const data = JSON.parse(localStorage.getItem("teacherProfile"));
+
+  if (!data) {
+    alert("No teacher data found. Please register first.");
+    window.location.href = "teacher.html";
+  } else {
+    document.getElementById("name").innerText = data.name;
+    document.getElementById("phone").innerText = data.phone;
+    document.getElementById("city").innerText = data.city;
+    document.getElementById("subject").innerText = data.subject;
+    document.getElementById("experience").innerText = data.experience;
+  }
 </script>
 
 </body>
