@@ -1,100 +1,68 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Chat | Lets Teach</title>
+  <title>Lets Teach Live Chat</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      padding: 20px;
-    }
+    body { font-family: Arial; background:#f4f4f4; padding:20px; }
     #chatBox {
-      background: #fff;
-      padding: 10px;
-      height: 300px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      margin-bottom: 10px;
+      background:#fff;
+      height:300px;
+      overflow-y:auto;
+      padding:10px;
+      border:1px solid #ccc;
+      margin-bottom:10px;
     }
-    .me {
-      text-align: right;
-      color: green;
-      margin: 5px 0;
-    }
-    .other {
-      text-align: left;
-      color: blue;
-      margin: 5px 0;
-    }
+    .me { text-align:right; color:green; margin:5px; }
+    .other { text-align:left; color:blue; margin:5px; }
   </style>
 </head>
 
 <body>
 
-<h2>Lets Teach Chat</h2>
+<h2>Lets Teach – Live Chat</h2>
 
-<input id="senderUid" placeholder="Your UID"><br><br>
-<input id="receiverUid" placeholder="Receiver UID"><br><br>
+<input id="myUid" placeholder="My UID"><br><br>
+<input id="otherUid" placeholder="Other UID"><br><br>
+<button onclick="join()">Join Chat</button>
 
 <div id="chatBox"></div>
 
-<input id="message" placeholder="Type message">
-<button onclick="sendMessage()">Send</button>
+<input id="msg" placeholder="Type message">
+<button onclick="send()">Send</button>
 
 <script>
-const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+const socket = io("https://express-hello-world-uh96.onrender.com");
+let roomId = "";
 
-// ---- URL PARAMS ----
-const params = new URLSearchParams(window.location.search);
-document.getElementById("senderUid").value = params.get("senderUid") || "";
-document.getElementById("receiverUid").value = params.get("receiverUid") || "";
+function join() {
+  const me = myUid.value;
+  const other = otherUid.value;
+  if (!me || !other) return alert("UID missing");
 
-// ---- LOAD CHAT ----
-function loadChat() {
-  const sender = senderUid.value;
-  const receiver = receiverUid.value;
-  if (!sender || !receiver) return;
-
-  fetch(`${BASE_URL}/api/chat/${sender}/${receiver}`)
-    .then(res => res.json())
-    .then(data => {
-      const box = document.getElementById("chatBox");
-      box.innerHTML = "";
-
-      (data.messages || []).forEach(m => {
-        const div = document.createElement("div");
-        div.className = m.senderUid === sender ? "me" : "other";
-        div.innerText = m.text;
-        box.appendChild(div);
-      });
-
-      box.scrollTop = box.scrollHeight;
-    });
+  roomId = me + "_" + other;
+  socket.emit("joinRoom", roomId);
 }
 
-// ---- SEND MESSAGE ----
-function sendMessage() {
-  if (!message.value.trim()) return;
+function send() {
+  if (!msg.value.trim()) return;
 
-  fetch(`${BASE_URL}/api/chat/send`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      senderUid: senderUid.value,
-      receiverUid: receiverUid.value,
-      text: message.value
-    })
-  })
-  .then(res => res.json())
-  .then(() => {
-    message.value = "";
-    loadChat();
+  socket.emit("chatMessage", {
+    roomId,
+    sender: myUid.value,
+    text: msg.value
   });
+
+  msg.value = "";
 }
 
-// ---- AUTO REFRESH ----
-loadChat();
-setInterval(loadChat, 3000);
+socket.on("chatMessage", (data) => {
+  const div = document.createElement("div");
+  div.className = data.sender === myUid.value ? "me" : "other";
+  div.innerText = data.text;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+});
 </script>
 
 </body>
