@@ -28,6 +28,7 @@
     }
   </style>
 </head>
+
 <body>
 
 <h2>Lets Teach Chat</h2>
@@ -39,59 +40,61 @@
 
 <input id="message" placeholder="Type message">
 <button onclick="sendMessage()">Send</button>
+
 <script>
+const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+
+// ---- URL PARAMS ----
 const params = new URLSearchParams(window.location.search);
+document.getElementById("senderUid").value = params.get("senderUid") || "";
+document.getElementById("receiverUid").value = params.get("receiverUid") || "";
 
-roomId.value = params.get("roomId");
-senderType.value = params.get("senderType");
-senderUid.value = params.get("senderUid");
-receiverUid.value = params.get("receiverUid");
+// ---- LOAD CHAT ----
+function loadChat() {
+  const sender = senderUid.value;
+  const receiver = receiverUid.value;
+  if (!sender || !receiver) return;
 
-load();
-</script>
-
-<script>
-  const BASE_URL = "https://express-hello-world-uh96.onrender.com";
-
-  function loadChat() {
-    const sender = senderUid.value;
-    const receiver = receiverUid.value;
-
-    if (!sender || !receiver) return;
-
-    fetch(`${BASE_URL}/api/chat/${sender}/${receiver}`)
-      .then(res => res.json())
-      .then(data => {
-        const box = document.getElementById("chatBox");
-        box.innerHTML = "";
-        data.messages.forEach(m => {
-          const div = document.createElement("div");
-          div.className = m.senderUid === sender ? "me" : "other";
-          div.innerText = m.text;
-          box.appendChild(div);
-        });
-        box.scrollTop = box.scrollHeight;
-      });
-  }
-
-  function sendMessage() {
-    fetch(`${BASE_URL}/api/chat/send`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        senderUid: senderUid.value,
-        receiverUid: receiverUid.value,
-        text: message.value
-      })
-    })
+  fetch(`${BASE_URL}/api/chat/${sender}/${receiver}`)
     .then(res => res.json())
-    .then(() => {
-      message.value = "";
-      loadChat();
-    });
-  }
+    .then(data => {
+      const box = document.getElementById("chatBox");
+      box.innerHTML = "";
 
-  setInterval(loadChat, 3000);
+      (data.messages || []).forEach(m => {
+        const div = document.createElement("div");
+        div.className = m.senderUid === sender ? "me" : "other";
+        div.innerText = m.text;
+        box.appendChild(div);
+      });
+
+      box.scrollTop = box.scrollHeight;
+    });
+}
+
+// ---- SEND MESSAGE ----
+function sendMessage() {
+  if (!message.value.trim()) return;
+
+  fetch(`${BASE_URL}/api/chat/send`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      senderUid: senderUid.value,
+      receiverUid: receiverUid.value,
+      text: message.value
+    })
+  })
+  .then(res => res.json())
+  .then(() => {
+    message.value = "";
+    loadChat();
+  });
+}
+
+// ---- AUTO REFRESH ----
+loadChat();
+setInterval(loadChat, 3000);
 </script>
 
 </body>
