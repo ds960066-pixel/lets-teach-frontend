@@ -1,42 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Socket Test | Lets Teach</title>
+  <title>Realtime Chat | Lets Teach</title>
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 </head>
 <body>
 
 <h2>Realtime Chat Test</h2>
 
-<input id="room" placeholder="Room ID" value="room1"><br><br>
-<input id="msg" placeholder="Message"><br><br>
+<input id="roomId" placeholder="Room ID" value="room1"><br><br>
+<input id="message" placeholder="Type message"><br><br>
 
-<button onclick="join()">Join Room</button>
-<button onclick="send()">Send</button>
+<button onclick="joinRoom()">Join Room</button>
+<button onclick="sendMessage()">Send</button>
 
 <ul id="chat"></ul>
 
 <script>
+  // backend se connect
   const socket = io("http://localhost:5000");
 
-  function join() {
-    const room = document.getElementById("room").value;
-    socket.emit("joinRoom", room);
-    alert("Joined room: " + room);
+  socket.on("connect", () => {
+    console.log("Socket connected:", socket.id);
+  });
+
+  function joinRoom() {
+    const roomId = document.getElementById("roomId").value;
+    socket.emit("joinRoom", roomId);
+    alert("Joined room: " + roomId);
   }
 
-  function send() {
-    const text = document.getElementById("msg").value;
-    const room = document.getElementById("room").value;
+  function sendMessage() {
+    const text = document.getElementById("message").value;
+    const roomId = document.getElementById("roomId").value;
 
     socket.emit("sendMessage", {
-      senderUid: "teacher1",
-      receiverUid: "institute1",
-      text,
-      roomId: room
+      senderUid: "teacher_demo",
+      receiverUid: "institute_demo",
+      text: text,
+      roomId: roomId
     });
 
-    document.getElementById("msg").value = "";
+    document.getElementById("message").value = "";
   }
 
   socket.on("receiveMessage", (msg) => {
