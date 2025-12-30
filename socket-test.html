@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Socket Test | Lets Teach</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+
+<h2>Realtime Chat Test</h2>
+
+<input id="room" placeholder="Room ID" value="room1"><br><br>
+<input id="msg" placeholder="Message"><br><br>
+
+<button onclick="join()">Join Room</button>
+<button onclick="send()">Send</button>
+
+<ul id="chat"></ul>
+
+<script>
+  const socket = io("http://localhost:5000");
+
+  function join() {
+    const room = document.getElementById("room").value;
+    socket.emit("joinRoom", room);
+    alert("Joined room: " + room);
+  }
+
+  function send() {
+    const text = document.getElementById("msg").value;
+    const room = document.getElementById("room").value;
+
+    socket.emit("sendMessage", {
+      senderUid: "teacher1",
+      receiverUid: "institute1",
+      text,
+      roomId: room
+    });
+
+    document.getElementById("msg").value = "";
+  }
+
+  socket.on("receiveMessage", (msg) => {
+    const li = document.createElement("li");
+    li.innerText = msg.senderUid + ": " + msg.text;
+    document.getElementById("chat").appendChild(li);
+  });
+</script>
+
+</body>
+</html>
