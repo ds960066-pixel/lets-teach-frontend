@@ -16,39 +16,36 @@
 <h3>Chat</h3>
 <ul id="chatBox"></ul>
 
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script>
-const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+  const params = new URLSearchParams(window.location.search);
+  const roomId = params.get("roomId");
+  const me = params.get("me");
 
-function sendMessage() {
-  fetch(`${BASE_URL}/api/chat/send`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      senderUid: teacherUid.value,
-      receiverUid: instituteUid.value,
-      text: message.value
-    })
-  })
-  .then(res => res.json())
-  .then(() => {
-    message.value = "";
-    loadChat();
-  });
-}
+  const socket = io("https://YOUR_BACKEND_RENDER_URL"); // yahan apna backend url
 
-function loadChat() {
-  fetch(`${BASE_URL}/api/chat/${teacherUid.value}/${instituteUid.value}`)
-    .then(res => res.json())
-    .then(data => {
-      const box = document.getElementById("chatBox");
-      box.innerHTML = "";
-      data.messages.forEach(m => {
-        const li = document.createElement("li");
-        li.innerText = `${m.senderUid}: ${m.text}`;
-        box.appendChild(li);
-      });
+  socket.emit("joinRoom", roomId);
+
+  function sendMessage() {
+    const text = document.getElementById("message").value;
+    if (!text) return;
+
+    socket.emit("sendMessage", {
+      roomId,
+      senderUid: me,
+      receiverUid: "auto",
+      text
     });
-}
+
+    document.getElementById("message").value = "";
+  }
+
+  socket.on("receiveMessage", (msg) => {
+    const box = document.getElementById("chatBox");
+    const div = document.createElement("div");
+    div.innerText = msg.senderUid + ": " + msg.text;
+    box.appendChild(div);
+  });
 </script>
 
 </body>
