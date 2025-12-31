@@ -2,8 +2,14 @@
 <html>
 <head>
   <title>Chat | Lets Teach</title>
+
   <style>
-    body { font-family: Arial; background: #f4f4f4; padding: 20px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+
     #chatBox {
       background: #fff;
       height: 300px;
@@ -11,15 +17,51 @@
       padding: 10px;
       border: 1px solid #ccc;
       margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
     }
-    .me { text-align: right; color: green; }
-    .other { text-align: left; color: blue; }
+
+    .me, .other {
+      margin: 6px 0;
+      padding: 6px 8px;
+      max-width: 70%;
+      border-radius: 6px;
+      word-wrap: break-word;
+    }
+
+    .me {
+      align-self: flex-end;
+      background: #d4f8d4;
+      text-align: right;
+    }
+
+    .other {
+      align-self: flex-start;
+      background: #e8ecff;
+      text-align: left;
+    }
+
+    small {
+      font-size: 10px;
+      color: #666;
+    }
+
+    input {
+      padding: 8px;
+      width: 75%;
+    }
+
+    button {
+      padding: 8px 14px;
+    }
   </style>
 </head>
+
 <body>
 
 <h2>Lets Teach Chat</h2>
 
+<!-- hidden but visible for debug -->
 <input id="senderUid" readonly><br><br>
 <input id="receiverUid" readonly><br><br>
 
@@ -29,57 +71,64 @@
 <button onclick="sendMessage()">Send</button>
 
 <script>
-const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+  const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-// URL PARAMS
-const params = new URLSearchParams(window.location.search);
-senderUid.value = params.get("senderUid");
-receiverUid.value = params.get("receiverUid");
+  // URL PARAMS
+  const params = new URLSearchParams(window.location.search);
+  const senderUid = params.get("senderUid");
+  const receiverUid = params.get("receiverUid");
 
-function loadChat() {
-  fetch(`${BASE_URL}/api/chat/${senderUid.value}/${receiverUid.value}`)
-    .then(res => res.json())
-    .then(data => {
-      const box = document.getElementById("chatBox");
-      box.innerHTML = "";
+  document.getElementById("senderUid").value = senderUid;
+  document.getElementById("receiverUid").value = receiverUid;
 
-      (data.messages || []).forEach(m => {
-        const div = document.createElement("div");
-        div.className = m.senderUid === senderUid.value ? "me" : "other";
-        const time = new Date(m.createdAt).toLocaleTimeString([], {
-  hour: '2-digit',
-  minute: '2-digit'
-});
+  // LOAD OLD CHAT
+  function loadChat() {
+    fetch(`${BASE_URL}/api/chat/${senderUid}/${receiverUid}`)
+      .then(res => res.json())
+      .then(data => {
+        const box = document.getElementById("chatBox");
+        box.innerHTML = "";
 
-div.innerHTML = `<small>${time}</small><br>${m.text}`;
+        (data.messages || []).forEach(m => {
+          const div = document.createElement("div");
+          div.className = m.senderUid === senderUid ? "me" : "other";
 
-        box.appendChild(div);
+          const time = new Date(m.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+
+          div.innerHTML = `<small>${time}</small><br>${m.text}`;
+          box.appendChild(div);
+        });
+
+        box.scrollTop = box.scrollHeight;
       });
+  }
 
-      box.scrollTop = box.scrollHeight;
-    });
-}
+  // SEND MESSAGE
+  function sendMessage() {
+    const text = document.getElementById("message").value.trim();
+    if (!text) return;
 
-function sendMessage() {
-  if (!message.value.trim()) return;
-
-  fetch(`${BASE_URL}/api/chat/send`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      senderUid: senderUid.value,
-      receiverUid: receiverUid.value,
-      text: message.value
+    fetch(`${BASE_URL}/api/chat/send`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        senderUid,
+        receiverUid,
+        text
+      })
     })
-  })
-  .then(() => {
-    message.value = "";
-    loadChat();
-  });
-}
+    .then(() => {
+      document.getElementById("message").value = "";
+      loadChat();
+    });
+  }
 
-loadChat();
-setInterval(loadChat, 3000);
+  // INITIAL LOAD + AUTO REFRESH
+  loadChat();
+  setInterval(loadChat, 3000);
 </script>
 
 </body>
