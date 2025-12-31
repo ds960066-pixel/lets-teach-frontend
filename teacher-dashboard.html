@@ -13,6 +13,11 @@
 
 <h3>My Invites</h3>
 <ul id="inviteList"></ul>
+  <hr>
+
+<h3>My Chats</h3>
+<ul id="chatList"></ul>
+
 
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
@@ -77,6 +82,38 @@ function openChat(me, other) {
   window.location.href =
     `chat.html?senderUid=${me}&receiverUid=${other}`;
 }
+  function loadMyChats() {
+  const uid = document.getElementById("teacherUid").value;
+  const list = document.getElementById("chatList");
+
+  list.innerHTML = "Loading chats...";
+
+  fetch(`${BASE_URL}/api/chat/list/${uid}`)
+    .then(res => res.json())
+    .then(data => {
+      list.innerHTML = "";
+
+      if (!data.chats || data.chats.length === 0) {
+        list.innerHTML = "<li>No chats yet</li>";
+        return;
+      }
+
+      data.chats.forEach(otherUid => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          ${otherUid}
+          <button onclick="openChat('${uid}','${otherUid}')">
+            Open Chat
+          </button>
+        `;
+        list.appendChild(li);
+      });
+    })
+    .catch(() => {
+      list.innerHTML = "<li>Error loading chats</li>";
+    });
+}
+
 </script>
 
 </body>
