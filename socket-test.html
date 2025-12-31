@@ -40,6 +40,7 @@
   // fallback values (important)
   const roomId = params.get("roomId") || "room1";
   const me = params.get("me") || "user1";
+  const other = params.get("other");
 
   // ✅ LOCAL BACKEND
   const socket = io("http://localhost:5000");
