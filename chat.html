@@ -3,6 +3,9 @@
 <head>
   <title>Chat | Lets Teach</title>
 
+  <!-- Socket.io CDN -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -59,9 +62,9 @@
 
 <body>
 
-<h2>Lets Teach Chat</h2>
+<h2>Lets Teach Chat (Realtime)</h2>
 
-<!-- hidden but visible for debug -->
+<!-- UID info (readonly, for clarity) -->
 <input id="senderUid" readonly><br><br>
 <input id="receiverUid" readonly><br><br>
 
@@ -73,7 +76,7 @@
 <script>
   const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-  // URL PARAMS
+  // ----- URL PARAMS -----
   const params = new URLSearchParams(window.location.search);
   const senderUid = params.get("senderUid");
   const receiverUid = params.get("receiverUid");
@@ -81,8 +84,15 @@
   document.getElementById("senderUid").value = senderUid;
   document.getElementById("receiverUid").value = receiverUid;
 
-  // LOAD OLD CHAT
-  function loadChat() {
+  // ----- SOCKET CONNECT -----
+  const socket = io("https://express-hello-world-uh96.onrender.com");
+
+  socket.on("connect", () => {
+    console.log("Socket connected");
+  });
+
+  // ----- LOAD CHAT HISTORY (ON PAGE LOAD) -----
+  function loadChatHistory() {
     fetch(`${BASE_URL}/api/chat/${senderUid}/${receiverUid}`)
       .then(res => res.json())
       .then(data => {
@@ -90,45 +100,52 @@
         box.innerHTML = "";
 
         (data.messages || []).forEach(m => {
-          const div = document.createElement("div");
-          div.className = m.senderUid === senderUid ? "me" : "other";
-
-          const time = new Date(m.createdAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit"
-          });
-
-          div.innerHTML = `<small>${time}</small><br>${m.text}`;
-          box.appendChild(div);
+          appendMessage(m.senderUid, m.text, m.createdAt);
         });
 
         box.scrollTop = box.scrollHeight;
       });
   }
 
-  // SEND MESSAGE
+  // ----- APPEND MESSAGE TO UI -----
+  function appendMessage(from, text, timeValue) {
+    const box = document.getElementById("chatBox");
+
+    const div = document.createElement("div");
+    div.className = from === senderUid ? "me" : "other";
+
+    const time = new Date(timeValue || Date.now()).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    div.innerHTML = `<small>${time}</small><br>${text}`;
+    box.appendChild(div);
+
+    box.scrollTop = box.scrollHeight;
+  }
+
+  // ----- SEND MESSAGE (SOCKET) -----
   function sendMessage() {
     const text = document.getElementById("message").value.trim();
     if (!text) return;
 
-    fetch(`${BASE_URL}/api/chat/send`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        senderUid,
-        receiverUid,
-        text
-      })
-    })
-    .then(() => {
-      document.getElementById("message").value = "";
-      loadChat();
+    socket.emit("sendMessage", {
+      senderUid,
+      receiverUid,
+      text
     });
+
+    document.getElementById("message").value = "";
   }
 
-  // INITIAL LOAD + AUTO REFRESH
-  loadChat();
-  setInterval(loadChat, 3000);
+  // ----- RECEIVE MESSAGE (REALTIME) -----
+  socket.on("receiveMessage", (msg) => {
+    appendMessage(msg.senderUid, msg.text, msg.createdAt);
+  });
+
+  // ----- INITIAL LOAD -----
+  loadChatHistory();
 </script>
 
 </body>
