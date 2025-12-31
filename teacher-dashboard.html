@@ -7,21 +7,22 @@
 
 <h2>Teacher Dashboard</h2>
 
-<!-- FIXED UID (NO MISMATCH) -->
+<!-- FIXED UID -->
 <input id="teacherUid" value="demof12345" readonly>
 <button onclick="loadInvites()">Load My Invites</button>
 
 <h3>My Invites</h3>
 <ul id="inviteList"></ul>
-  <hr>
+
+<hr>
 
 <h3>My Chats</h3>
 <ul id="chatList"></ul>
 
-
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
+/* -------- INVITES -------- */
 function loadInvites() {
   const uid = document.getElementById("teacherUid").value;
   const list = document.getElementById("inviteList");
@@ -30,7 +31,6 @@ function loadInvites() {
   fetch(`${BASE_URL}/api/invite/teacher/${uid}`)
     .then(res => res.json())
     .then(data => {
-      console.log("Invites:", data.invites);
       list.innerHTML = "";
 
       if (!data.invites || data.invites.length === 0) {
@@ -70,7 +70,12 @@ function loadInvites() {
 
 function acceptInvite(id) {
   fetch(`${BASE_URL}/api/invite/accept/${id}`, { method: "POST" })
-    .then(() => setTimeout(loadInvites, 500));
+    .then(() => {
+      setTimeout(() => {
+        loadInvites();
+        loadMyChats();   // 🔥 IMPORTANT
+      }, 500);
+    });
 }
 
 function rejectInvite(id) {
@@ -78,11 +83,8 @@ function rejectInvite(id) {
     .then(() => setTimeout(loadInvites, 500));
 }
 
-function openChat(me, other) {
-  window.location.href =
-    `chat.html?senderUid=${me}&receiverUid=${other}`;
-}
-  function loadMyChats() {
+/* -------- CHAT LIST -------- */
+function loadMyChats() {
   const uid = document.getElementById("teacherUid").value;
   const list = document.getElementById("chatList");
 
@@ -114,6 +116,15 @@ function openChat(me, other) {
     });
 }
 
+/* -------- OPEN CHAT -------- */
+function openChat(me, other) {
+  window.location.href =
+    `chat.html?senderUid=${me}&receiverUid=${other}`;
+}
+
+/* -------- AUTO LOAD -------- */
+loadInvites();
+loadMyChats();
 </script>
 
 </body>
