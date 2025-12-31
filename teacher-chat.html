@@ -2,50 +2,64 @@
 <html>
 <head>
   <title>Teacher Chat | Lets Teach</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    #chatBox {
+      border: 1px solid #ccc;
+      height: 250px;
+      overflow-y: auto;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    .me { color: green; text-align: right; margin: 5px; }
+    .other { color: blue; text-align: left; margin: 5px; }
+  </style>
 </head>
+
 <body>
 
-<h2>Teacher Chat</h2>
-
-<input id="teacherUid" placeholder="Teacher UID" value="demof12345"><br><br>
-<input id="instituteUid" placeholder="Institute UID"><br><br>
+<h2>Teacher Chat (Realtime)</h2>
 
 <textarea id="message" placeholder="Type message"></textarea><br><br>
 <button onclick="sendMessage()">Send</button>
 
-<h3>Chat</h3>
-<ul id="chatBox"></ul>
+<div id="chatBox"></div>
 
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script>
   const params = new URLSearchParams(window.location.search);
-  const roomId = params.get("roomId");
-  const me = params.get("me");
 
-  const socket = io("https://YOUR_BACKEND_RENDER_URL"); // yahan apna backend url
+  const roomId = params.get("roomId") || "demof12345_demof321";
+  const me = params.get("me") || "demof12345";
 
-  socket.emit("joinRoom", roomId);
+  // 🔴 BACKEND URL (IMPORTANT)
+  const socket = io("http://localhost:5000"); 
+  // later production me render url daalenge
+
+  socket.on("connect", () => {
+    console.log("Socket connected");
+    socket.emit("joinRoom", roomId);
+  });
+
+  socket.on("receiveMessage", (msg) => {
+    const div = document.createElement("div");
+    div.className = msg.senderUid === me ? "me" : "other";
+    div.innerText = msg.senderUid + ": " + msg.text;
+    document.getElementById("chatBox").appendChild(div);
+  });
 
   function sendMessage() {
-    const text = document.getElementById("message").value;
+    const text = document.getElementById("message").value.trim();
     if (!text) return;
 
     socket.emit("sendMessage", {
       roomId,
       senderUid: me,
-      receiverUid: "auto",
       text
     });
 
     document.getElementById("message").value = "";
   }
-
-  socket.on("receiveMessage", (msg) => {
-    const box = document.getElementById("chatBox");
-    const div = document.createElement("div");
-    div.innerText = msg.senderUid + ": " + msg.text;
-    box.appendChild(div);
-  });
 </script>
 
 </body>
