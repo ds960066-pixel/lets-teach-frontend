@@ -46,7 +46,13 @@ function loadChat() {
       (data.messages || []).forEach(m => {
         const div = document.createElement("div");
         div.className = m.senderUid === senderUid.value ? "me" : "other";
-        div.innerText = m.text;
+        const time = new Date(m.createdAt).toLocaleTimeString([], {
+  hour: '2-digit',
+  minute: '2-digit'
+});
+
+div.innerHTML = `<small>${time}</small><br>${m.text}`;
+
         box.appendChild(div);
       });
 
