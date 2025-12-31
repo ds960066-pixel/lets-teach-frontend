@@ -7,7 +7,7 @@
 
 <h2>Teacher Dashboard</h2>
 
-<!-- FIXED UID -->
+<!-- FIXED UID (demo/testing) -->
 <input id="teacherUid" value="demof12345" readonly>
 <button onclick="loadInvites()">Load My Invites</button>
 
@@ -22,11 +22,12 @@
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-/* -------- INVITES -------- */
+/* ================= INVITES ================= */
+
 function loadInvites() {
   const uid = document.getElementById("teacherUid").value;
   const list = document.getElementById("inviteList");
-  list.innerHTML = "Loading...";
+  list.innerHTML = "Loading invites...";
 
   fetch(`${BASE_URL}/api/invite/teacher/${uid}`)
     .then(res => res.json())
@@ -73,7 +74,7 @@ function acceptInvite(id) {
     .then(() => {
       setTimeout(() => {
         loadInvites();
-        loadMyChats();   // 🔥 IMPORTANT
+        loadMyChats(); // refresh chat list
       }, 500);
     });
 }
@@ -83,7 +84,8 @@ function rejectInvite(id) {
     .then(() => setTimeout(loadInvites, 500));
 }
 
-/* -------- CHAT LIST -------- */
+/* ================= CHAT LIST (PART B) ================= */
+
 function loadMyChats() {
   const uid = document.getElementById("teacherUid").value;
   const list = document.getElementById("chatList");
@@ -100,13 +102,21 @@ function loadMyChats() {
         return;
       }
 
-      data.chats.forEach(otherUid => {
+      data.chats.forEach(chat => {
+        const time = new Date(chat.time).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+
         const li = document.createElement("li");
         li.innerHTML = `
-          ${otherUid}
-          <button onclick="openChat('${uid}','${otherUid}')">
+          <b>${chat.with}</b><br>
+          <small>${chat.lastText}</small><br>
+          <small>${time}</small><br>
+          <button onclick="openChat('${uid}','${chat.with}')">
             Open Chat
           </button>
+          <hr>
         `;
         list.appendChild(li);
       });
@@ -116,13 +126,15 @@ function loadMyChats() {
     });
 }
 
-/* -------- OPEN CHAT -------- */
+/* ================= OPEN CHAT ================= */
+
 function openChat(me, other) {
   window.location.href =
     `chat.html?senderUid=${me}&receiverUid=${other}`;
 }
 
-/* -------- AUTO LOAD -------- */
+/* ================= AUTO LOAD ================= */
+
 loadInvites();
 loadMyChats();
 </script>
