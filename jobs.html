@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Teaching Jobs | Lets Teach</title>
+  <style>
+    body { font-family: Arial; padding:20px; background:#f4f4f4; }
+    .card {
+      background:#fff;
+      padding:15px;
+      margin-bottom:10px;
+      border-radius:5px;
+    }
+    button {
+      padding:6px 10px;
+      background:#27ae60;
+      color:#fff;
+      border:none;
+      cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Teaching Jobs</h2>
+
+<input id="city" placeholder="City">
+<input id="subject" placeholder="Subject">
+<select id="role">
+  <option value="">Any</option>
+  <option value="part-time">Part-time</option>
+  <option value="full-time">Full-time</option>
+</select>
+<button onclick="loadJobs()">Search</button>
+
+<hr>
+
+<div id="jobs"></div>
+
+<script>
+const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+
+function loadJobs() {
+  const city = document.getElementById("city").value;
+  const subject = document.getElementById("subject").value;
+  const role = document.getElementById("role").value;
+
+  let url = `${BASE_URL}/api/job/browse?`;
+  if (city) url += `city=${city}&`;
+  if (subject) url += `subject=${subject}&`;
+  if (role) url += `role=${role}`;
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      const box = document.getElementById("jobs");
+      box.innerHTML = "";
+
+      if (!data.jobs || data.jobs.length === 0) {
+        box.innerHTML = "<p>No jobs found</p>";
+        return;
+      }
+
+      data.jobs.forEach(j => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <h3>${j.title}</h3>
+          <p><b>Subject:</b> ${j.subject}</p>
+          <p><b>City:</b> ${j.city}</p>
+          <p><b>Role:</b> ${j.role}</p>
+          <p><b>Salary:</b> ${j.salary || "Negotiable"}</p>
+
+          <button onclick="alert('Login required to apply')">
+            Apply
+          </button>
+        `;
+        box.appendChild(div);
+      });
+    });
+}
+</script>
+
+</body>
+</html>
