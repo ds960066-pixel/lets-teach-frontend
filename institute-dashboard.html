@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Institute Dashboard | Lets Teach</title>
+</head>
+<body>
+
+<h2>Institute Dashboard</h2>
+
+<!-- FIXED DEMO UID -->
+<input id="instituteUid" value="school321" readonly>
+
+<hr>
+
+<h3>Browse Teachers</h3>
+
+<input id="city" placeholder="City">
+<input id="subject" placeholder="Subject">
+<button onclick="browseTeachers()">Search</button>
+
+<ul id="teacherList"></ul>
+
+<script>
+const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+
+function browseTeachers() {
+  const city = document.getElementById("city").value;
+  const subject = document.getElementById("subject").value;
+
+  let url = `${BASE_URL}/api/teacher/browse?`;
+  if (city) url += `city=${city}&`;
+  if (subject) url += `subject=${subject}`;
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      const list = document.getElementById("teacherList");
+      list.innerHTML = "";
+
+      if (!data.teachers || data.teachers.length === 0) {
+        list.innerHTML = "<li>No teachers found</li>";
+        return;
+      }
+
+      data.teachers.forEach(t => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <b>${t.name}</b> (${t.subject}) - ${t.city}
+          <br>
+          <button onclick="sendInvite('${t.uid}')">
+            Send Invite
+          </button>
+          <hr>
+        `;
+        list.appendChild(li);
+      });
+    });
+}
+
+function sendInvite(teacherUid) {
+  fetch(`${BASE_URL}/api/invite/create`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      fromType: "institute",
+      fromUid: document.getElementById("instituteUid").value,
+      toType: "teacher",
+      toUid: teacherUid
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message || "Invite sent");
+  });
+}
+</script>
+
+</body>
+</html>
