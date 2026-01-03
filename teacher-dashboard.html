@@ -2,14 +2,18 @@
 <html>
 <head>
   <title>Teacher Dashboard | Lets Teach</title>
+  <meta charset="UTF-8" />
 </head>
 <body>
 
 <h2>Teacher Dashboard</h2>
 
-<!-- FIXED UID (demo/testing) -->
+<!-- DEMO UID (future auth se replace hoga) -->
 <input id="teacherUid" value="demof12345" readonly>
-<button onclick="loadInvites()">Load My Invites</button>
+
+<p id="statusMsg" style="color:red;"></p>
+
+<hr>
 
 <h3>My Invites</h3>
 <ul id="inviteList"></ul>
@@ -47,13 +51,19 @@ function loadInvites() {
           <b>Status:</b> ${invite.status}<br>
         `;
 
+        /* Pending → Accept / Reject */
         if (invite.status === "pending") {
           li.innerHTML += `
-            <button onclick="acceptInvite('${invite._id}')">Accept</button>
-            <button onclick="rejectInvite('${invite._id}')">Reject</button>
+            <button onclick="acceptInvite('${invite._id}')">
+              Accept
+            </button>
+            <button onclick="rejectInvite('${invite._id}')">
+              Reject
+            </button>
           `;
         }
 
+        /* Accepted → Open Chat */
         if (invite.status === "accepted") {
           li.innerHTML += `
             <br>
@@ -66,25 +76,43 @@ function loadInvites() {
         li.innerHTML += "<hr>";
         list.appendChild(li);
       });
+    })
+    .catch(() => {
+      list.innerHTML = "<li>Error loading invites</li>";
     });
 }
 
 function acceptInvite(id) {
+  document.getElementById("statusMsg").innerText = "";
+
   fetch(`${BASE_URL}/api/invite/accept/${id}`, { method: "POST" })
-    .then(() => {
+    .then(res => res.json())
+    .then(data => {
+
+      /* 🔒 Verification guard (teacher side) */
+      if (data.code === "PROFILE_NOT_VERIFIED") {
+        document.getElementById("statusMsg").innerText =
+          "⚠️ Your profile is under verification. You cannot accept invites yet.";
+        return;
+      }
+
       setTimeout(() => {
         loadInvites();
-        loadMyChats(); // refresh chat list
-      }, 500);
+        loadMyChats();
+      }, 400);
+    })
+    .catch(() => {
+      alert("Server error. Please try again.");
     });
 }
 
 function rejectInvite(id) {
   fetch(`${BASE_URL}/api/invite/reject/${id}`, { method: "POST" })
-    .then(() => setTimeout(loadInvites, 500));
+    .then(() => setTimeout(loadInvites, 300))
+    .catch(() => alert("Error rejecting invite"));
 }
 
-/* ================= CHAT LIST (PART B) ================= */
+/* ================= CHAT LIST ================= */
 
 function loadMyChats() {
   const uid = document.getElementById("teacherUid").value;
@@ -103,15 +131,17 @@ function loadMyChats() {
       }
 
       data.chats.forEach(chat => {
-        const time = new Date(chat.time).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit"
-        });
+        const time = chat.time
+          ? new Date(chat.time).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit"
+            })
+          : "";
 
         const li = document.createElement("li");
         li.innerHTML = `
           <b>${chat.with}</b><br>
-          <small>${chat.lastText}</small><br>
+          <small>${chat.lastText || ""}</small><br>
           <small>${time}</small><br>
           <button onclick="openChat('${uid}','${chat.with}')">
             Open Chat
