@@ -4,12 +4,10 @@
   <title>Teacher Dashboard | Lets Teach</title>
   <meta charset="UTF-8" />
 </head>
+
 <body>
 
 <h2>Teacher Dashboard</h2>
-
-<!-- DEMO UID (future auth se replace hoga) -->
-<input id="teacherUid" value="demof12345" readonly>
 
 <p id="statusMsg" style="color:red;"></p>
 
@@ -26,10 +24,18 @@
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
+/* ---------- AUTH GUARD ---------- */
+const uid = localStorage.getItem("uid");
+const userType = localStorage.getItem("userType");
+
+if (!uid || userType !== "teacher") {
+  alert("Please login as teacher");
+  window.location.href = "login.html";
+}
+
 /* ================= INVITES ================= */
 
 function loadInvites() {
-  const uid = document.getElementById("teacherUid").value;
   const list = document.getElementById("inviteList");
   list.innerHTML = "Loading invites...";
 
@@ -67,7 +73,7 @@ function loadInvites() {
         if (invite.status === "accepted") {
           li.innerHTML += `
             <br>
-            <button onclick="openChat('${uid}','${invite.fromUid}')">
+            <button onclick="openChat('${invite.fromUid}')">
               Open Chat
             </button>
           `;
@@ -89,7 +95,7 @@ function acceptInvite(id) {
     .then(res => res.json())
     .then(data => {
 
-      /* 🔒 Verification guard (teacher side) */
+      /* 🔒 Verification guard */
       if (data.code === "PROFILE_NOT_VERIFIED") {
         document.getElementById("statusMsg").innerText =
           "⚠️ Your profile is under verification. You cannot accept invites yet.";
@@ -115,9 +121,7 @@ function rejectInvite(id) {
 /* ================= CHAT LIST ================= */
 
 function loadMyChats() {
-  const uid = document.getElementById("teacherUid").value;
   const list = document.getElementById("chatList");
-
   list.innerHTML = "Loading chats...";
 
   fetch(`${BASE_URL}/api/chat/list/${uid}`)
@@ -143,7 +147,7 @@ function loadMyChats() {
           <b>${chat.with}</b><br>
           <small>${chat.lastText || ""}</small><br>
           <small>${time}</small><br>
-          <button onclick="openChat('${uid}','${chat.with}')">
+          <button onclick="openChat('${chat.with}')">
             Open Chat
           </button>
           <hr>
@@ -158,9 +162,9 @@ function loadMyChats() {
 
 /* ================= OPEN CHAT ================= */
 
-function openChat(me, other) {
+function openChat(otherUid) {
   window.location.href =
-    `chat.html?senderUid=${me}&receiverUid=${other}`;
+    `chat.html?senderUid=${uid}&receiverUid=${otherUid}`;
 }
 
 /* ================= AUTO LOAD ================= */
