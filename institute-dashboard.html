@@ -4,12 +4,10 @@
   <title>Institute Dashboard | Lets Teach</title>
   <meta charset="UTF-8" />
 </head>
+
 <body>
 
 <h2>Institute Dashboard</h2>
-
-<!-- DEMO UID (later auth se replace hoga) -->
-<input id="instituteUid" value="school321" readonly>
 
 <p id="statusMsg" style="color:red;"></p>
 
@@ -26,8 +24,17 @@
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
+/* ---------- AUTH GUARD ---------- */
+const uid = localStorage.getItem("uid");
+const userType = localStorage.getItem("userType");
+
+if (!uid || userType !== "institute") {
+  alert("Please login as institute");
+  window.location.href = "login.html";
+}
+
 /* ---------------------------
-   Browse Teachers (Public)
+   Browse Teachers (Public Data)
 ---------------------------- */
 function browseTeachers() {
   const city = document.getElementById("city").value.trim();
@@ -57,6 +64,9 @@ function browseTeachers() {
           <button onclick="sendInvite('${t.uid}')">
             Send Invite
           </button>
+          <button onclick="viewProfile('${t.uid}')">
+            View Profile
+          </button>
           <hr>
         `;
 
@@ -79,7 +89,7 @@ function sendInvite(teacherUid) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       fromType: "institute",
-      fromUid: document.getElementById("instituteUid").value,
+      fromUid: uid,
       toType: "teacher",
       toUid: teacherUid
     })
@@ -104,6 +114,13 @@ function sendInvite(teacherUid) {
   .catch(() => {
     alert("Server error. Please try again later.");
   });
+}
+
+/* ---------------------------
+   View Teacher Public Profile
+---------------------------- */
+function viewProfile(teacherUid) {
+  window.location.href = `teacher-profile.html?uid=${teacherUid}`;
 }
 </script>
 
