@@ -2,26 +2,48 @@
 <html>
 <head>
   <title>Teaching Jobs | Lets Teach</title>
+
   <style>
-    body { font-family: Arial; padding:20px; background:#f4f4f4; }
-    .card {
-      background:#fff;
-      padding:15px;
-      margin-bottom:10px;
-      border-radius:5px;
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background: #f4f4f4;
     }
+
+    .card {
+      background: #fff;
+      padding: 15px;
+      margin-bottom: 12px;
+      border-radius: 5px;
+    }
+
     button {
-      padding:6px 10px;
-      background:#27ae60;
-      color:#fff;
-      border:none;
-      cursor:pointer;
+      padding: 6px 12px;
+      background: #27ae60;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .login-hint {
+      background: #fff3cd;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 4px;
+      color: #856404;
     }
   </style>
 </head>
+
 <body>
 
 <h2>Teaching Jobs</h2>
+
+<!-- 🔔 PUBLIC MODE MESSAGE -->
+<div id="loginHint" class="login-hint" style="display:none;">
+  Please register or login to apply for jobs.
+</div>
 
 <input id="city" placeholder="City">
 <input id="subject" placeholder="Subject">
@@ -30,6 +52,7 @@
   <option value="part-time">Part-time</option>
   <option value="full-time">Full-time</option>
 </select>
+
 <button onclick="loadJobs()">Search</button>
 
 <hr>
@@ -39,6 +62,15 @@
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
+/* ✅ LOGIN STATE CHECK */
+const teacherUid = localStorage.getItem("teacherUid");
+
+/* SHOW HINT IF PUBLIC USER */
+if (!teacherUid) {
+  document.getElementById("loginHint").style.display = "block";
+}
+
+/* LOAD JOBS */
 function loadJobs() {
   const city = document.getElementById("city").value;
   const subject = document.getElementById("subject").value;
@@ -63,21 +95,47 @@ function loadJobs() {
       data.jobs.forEach(j => {
         const div = document.createElement("div");
         div.className = "card";
+
         div.innerHTML = `
           <h3>${j.title}</h3>
           <p><b>Subject:</b> ${j.subject}</p>
           <p><b>City:</b> ${j.city}</p>
-          <p><b>Role:</b> ${j.role}</p>
+          <p><b>Role:</b> ${j.role || "Both"}</p>
           <p><b>Salary:</b> ${j.salary || "Negotiable"}</p>
 
-          <button onclick="alert('Login required to apply')">
+          <button onclick="applyJob('${j._id}')">
             Apply
           </button>
         `;
+
         box.appendChild(div);
       });
     });
 }
+
+/* APPLY JOB */
+function applyJob(jobId) {
+  if (!teacherUid) {
+    alert("Please register or login to apply for jobs");
+    return;
+  }
+
+  fetch(`${BASE_URL}/api/job/apply`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      jobId,
+      teacherUid
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message || "Applied successfully");
+  });
+}
+
+/* INITIAL LOAD */
+loadJobs();
 </script>
 
 </body>
