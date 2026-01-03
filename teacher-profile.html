@@ -21,9 +21,7 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
-    h2 {
-      margin-top: 0;
-    }
+    h2 { margin-top: 0; }
 
     .badge {
       display: inline-block;
@@ -35,9 +33,7 @@
       margin-bottom: 10px;
     }
 
-    .field {
-      margin: 10px 0;
-    }
+    .field { margin: 10px 0; }
 
     .label {
       font-size: 12px;
@@ -64,15 +60,8 @@
       cursor: pointer;
     }
 
-    .invite {
-      background: #128c7e;
-      color: #fff;
-    }
-
-    .chat {
-      background: #075e54;
-      color: #fff;
-    }
+    .invite { background: #128c7e; color: #fff; }
+    .chat   { background: #075e54; color: #fff; }
   </style>
 </head>
 
@@ -111,12 +100,13 @@
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-/* -------- GET UID FROM URL -------- */
+/* -------- AUTH STATE -------- */
+const uid = localStorage.getItem("uid");
+const userType = localStorage.getItem("userType");
+
+/* -------- GET TEACHER UID FROM URL -------- */
 const params = new URLSearchParams(window.location.search);
 const teacherUid = params.get("uid");
-
-/* ⚠️ DEMO INSTITUTE UID (later auth se aayega) */
-const instituteUid = "school321";
 
 /* -------- LOAD TEACHER PROFILE -------- */
 fetch(`${BASE_URL}/api/teacher/${teacherUid}`)
@@ -131,14 +121,22 @@ fetch(`${BASE_URL}/api/teacher/${teacherUid}`)
     document.getElementById("role").innerText = t.role || "Both";
   });
 
-/* -------- ACTIONS -------- */
+/* -------- ACTIONS (STEP-5 FLOW) -------- */
+
 function sendInvite() {
+  // 🔒 only institute can invite
+  if (!uid || userType !== "institute") {
+    window.location.href =
+      `login.html?redirect=teacher-profile&uid=${teacherUid}`;
+    return;
+  }
+
   fetch(`${BASE_URL}/api/invite/create`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       fromType: "institute",
-      fromUid: instituteUid,
+      fromUid: uid,
       toType: "teacher",
       toUid: teacherUid
     })
@@ -148,8 +146,15 @@ function sendInvite() {
 }
 
 function openChat() {
+  // 🔒 only institute can chat from here
+  if (!uid || userType !== "institute") {
+    window.location.href =
+      `login.html?redirect=teacher-profile&uid=${teacherUid}`;
+    return;
+  }
+
   window.location.href =
-    `chat.html?senderUid=${instituteUid}&receiverUid=${teacherUid}`;
+    `chat.html?senderUid=${uid}&receiverUid=${teacherUid}`;
 }
 </script>
 
