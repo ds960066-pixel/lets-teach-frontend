@@ -2,13 +2,16 @@
 <html>
 <head>
   <title>Institute Dashboard | Lets Teach</title>
+  <meta charset="UTF-8" />
 </head>
 <body>
 
 <h2>Institute Dashboard</h2>
 
-<!-- FIXED DEMO UID -->
+<!-- DEMO UID (later auth se replace hoga) -->
 <input id="instituteUid" value="school321" readonly>
+
+<p id="statusMsg" style="color:red;"></p>
 
 <hr>
 
@@ -23,13 +26,16 @@
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
+/* ---------------------------
+   Browse Teachers (Public)
+---------------------------- */
 function browseTeachers() {
-  const city = document.getElementById("city").value;
-  const subject = document.getElementById("subject").value;
+  const city = document.getElementById("city").value.trim();
+  const subject = document.getElementById("subject").value.trim();
 
   let url = `${BASE_URL}/api/teacher/browse?`;
-  if (city) url += `city=${city}&`;
-  if (subject) url += `subject=${subject}`;
+  if (city) url += `city=${encodeURIComponent(city)}&`;
+  if (subject) url += `subject=${encodeURIComponent(subject)}`;
 
   fetch(url)
     .then(res => res.json())
@@ -44,6 +50,7 @@ function browseTeachers() {
 
       data.teachers.forEach(t => {
         const li = document.createElement("li");
+
         li.innerHTML = `
           <b>${t.name}</b> (${t.subject}) - ${t.city}
           <br>
@@ -52,12 +59,21 @@ function browseTeachers() {
           </button>
           <hr>
         `;
+
         list.appendChild(li);
       });
+    })
+    .catch(() => {
+      alert("Unable to load teachers. Please try again later.");
     });
 }
 
+/* ---------------------------
+   Send Invite (Verified Guard)
+---------------------------- */
 function sendInvite(teacherUid) {
+  document.getElementById("statusMsg").innerText = "";
+
   fetch(`${BASE_URL}/api/invite/create`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -70,7 +86,23 @@ function sendInvite(teacherUid) {
   })
   .then(res => res.json())
   .then(data => {
-    alert(data.message || "Invite sent");
+
+    // 🔒 Verification Block
+    if (data.code === "PROFILE_NOT_VERIFIED") {
+      document.getElementById("statusMsg").innerText =
+        "⚠️ Your institute profile is under verification. You cannot send invites yet.";
+      return;
+    }
+
+    if (data.success === false) {
+      alert(data.message || "Action not allowed");
+      return;
+    }
+
+    alert(data.message || "Invite sent successfully");
+  })
+  .catch(() => {
+    alert("Server error. Please try again later.");
   });
 }
 </script>
