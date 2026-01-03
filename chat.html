@@ -3,7 +3,6 @@
 <head>
   <title>Chat | Lets Teach</title>
 
-  <!-- Socket.io CDN -->
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
   <style>
@@ -64,7 +63,6 @@
 
 <h2>Lets Teach Chat (Realtime)</h2>
 
-<!-- UID info (readonly, for clarity) -->
 <input id="senderUid" readonly><br><br>
 <input id="receiverUid" readonly><br><br>
 
@@ -84,14 +82,21 @@
   document.getElementById("senderUid").value = senderUid;
   document.getElementById("receiverUid").value = receiverUid;
 
+  // ✅ FINAL ROOM ID (SAME FOR BOTH SIDES)
+  const roomId = [senderUid, receiverUid].sort().join("_");
+  console.log("ROOM ID:", roomId);
+
   // ----- SOCKET CONNECT -----
-  const socket = io("https://express-hello-world-uh96.onrender.com");
+  const socket = io(BASE_URL);
 
   socket.on("connect", () => {
-    console.log("Socket connected");
+    console.log("Socket connected:", socket.id);
+
+    // ✅ JOIN ROOM ON CONNECT
+    socket.emit("joinRoom", roomId);
   });
 
-  // ----- LOAD CHAT HISTORY (ON PAGE LOAD) -----
+  // ----- LOAD CHAT HISTORY -----
   function loadChatHistory() {
     fetch(`${BASE_URL}/api/chat/${senderUid}/${receiverUid}`)
       .then(res => res.json())
@@ -107,7 +112,7 @@
       });
   }
 
-  // ----- APPEND MESSAGE TO UI -----
+  // ----- APPEND MESSAGE -----
   function appendMessage(from, text, timeValue) {
     const box = document.getElementById("chatBox");
 
@@ -121,11 +126,10 @@
 
     div.innerHTML = `<small>${time}</small><br>${text}`;
     box.appendChild(div);
-
     box.scrollTop = box.scrollHeight;
   }
 
-  // ----- SEND MESSAGE (SOCKET) -----
+  // ----- SEND MESSAGE -----
   function sendMessage() {
     const text = document.getElementById("message").value.trim();
     if (!text) return;
@@ -133,18 +137,19 @@
     socket.emit("sendMessage", {
       senderUid,
       receiverUid,
-      text
+      text,
+      roomId
     });
 
     document.getElementById("message").value = "";
   }
 
-  // ----- RECEIVE MESSAGE (REALTIME) -----
+  // ----- RECEIVE MESSAGE -----
   socket.on("receiveMessage", (msg) => {
     appendMessage(msg.senderUid, msg.text, msg.createdAt);
   });
 
-  // ----- INITIAL LOAD -----
+  // ----- INIT -----
   loadChatHistory();
 </script>
 
