@@ -9,6 +9,11 @@
 
 <h2>Teacher Dashboard</h2>
 
+<!-- 🔍 NEW FEATURE ENTRY -->
+<button onclick="goBrowseInstitutes()">
+  🔍 Browse Institutes in My City
+</button>
+
 <p id="statusMsg" style="color:red;"></p>
 
 <hr>
@@ -24,12 +29,12 @@
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-/* ---------- AUTH GUARD ---------- */
+/* 🔐 AUTH CHECK */
 const uid = localStorage.getItem("uid");
 const userType = localStorage.getItem("userType");
 
 if (!uid || userType !== "teacher") {
-  alert("Please login as teacher");
+  alert("Please login as Teacher");
   window.location.href = "login.html";
 }
 
@@ -57,23 +62,17 @@ function loadInvites() {
           <b>Status:</b> ${invite.status}<br>
         `;
 
-        /* Pending → Accept / Reject */
         if (invite.status === "pending") {
           li.innerHTML += `
-            <button onclick="acceptInvite('${invite._id}')">
-              Accept
-            </button>
-            <button onclick="rejectInvite('${invite._id}')">
-              Reject
-            </button>
+            <button onclick="acceptInvite('${invite._id}')">Accept</button>
+            <button onclick="rejectInvite('${invite._id}')">Reject</button>
           `;
         }
 
-        /* Accepted → Open Chat */
         if (invite.status === "accepted") {
           li.innerHTML += `
             <br>
-            <button onclick="openChat('${invite.fromUid}')">
+            <button onclick="openChat('${uid}','${invite.fromUid}')">
               Open Chat
             </button>
           `;
@@ -89,33 +88,18 @@ function loadInvites() {
 }
 
 function acceptInvite(id) {
-  document.getElementById("statusMsg").innerText = "";
-
   fetch(`${BASE_URL}/api/invite/accept/${id}`, { method: "POST" })
-    .then(res => res.json())
-    .then(data => {
-
-      /* 🔒 Verification guard */
-      if (data.code === "PROFILE_NOT_VERIFIED") {
-        document.getElementById("statusMsg").innerText =
-          "⚠️ Your profile is under verification. You cannot accept invites yet.";
-        return;
-      }
-
+    .then(() => {
       setTimeout(() => {
         loadInvites();
         loadMyChats();
       }, 400);
-    })
-    .catch(() => {
-      alert("Server error. Please try again.");
     });
 }
 
 function rejectInvite(id) {
   fetch(`${BASE_URL}/api/invite/reject/${id}`, { method: "POST" })
-    .then(() => setTimeout(loadInvites, 300))
-    .catch(() => alert("Error rejecting invite"));
+    .then(() => setTimeout(loadInvites, 300));
 }
 
 /* ================= CHAT LIST ================= */
@@ -147,7 +131,7 @@ function loadMyChats() {
           <b>${chat.with}</b><br>
           <small>${chat.lastText || ""}</small><br>
           <small>${time}</small><br>
-          <button onclick="openChat('${chat.with}')">
+          <button onclick="openChat('${uid}','${chat.with}')">
             Open Chat
           </button>
           <hr>
@@ -160,11 +144,15 @@ function loadMyChats() {
     });
 }
 
-/* ================= OPEN CHAT ================= */
+/* ================= NAVIGATION ================= */
 
-function openChat(otherUid) {
+function goBrowseInstitutes() {
+  window.location.href = "teacher-institute-browse.html";
+}
+
+function openChat(me, other) {
   window.location.href =
-    `chat.html?senderUid=${uid}&receiverUid=${otherUid}`;
+    `chat.html?senderUid=${me}&receiverUid=${other}`;
 }
 
 /* ================= AUTO LOAD ================= */
