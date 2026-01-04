@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login | Lets Teach</title>
+  <meta charset="UTF-8" />
+</head>
+<body>
+
+<h2>Login to Lets Teach</h2>
+
+<p>Select your role to continue</p>
+
+<button onclick="loginTeacher()">Login as Teacher</button>
+<br><br>
+
+<button onclick="loginInstitute()">Login as Institute</button>
+
+<script>
+function loginTeacher() {
+  localStorage.setItem("uid", "demof12345");
+  localStorage.setItem("userType", "teacher");
+  window.location.href = "teacher-dashboard.html";
+}
+
+function loginInstitute() {
+  localStorage.setItem("uid", "school321");
+  localStorage.setItem("userType", "institute");
+  window.location.href = "institute-dashboard.html";
+}
+</script>
+
+</body>
+</html>
