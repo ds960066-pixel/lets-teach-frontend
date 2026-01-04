@@ -68,3 +68,25 @@ This project is built with **production-ready logic**, not as a demo CRUD app.
 
 ## 🔁 Application Flow
 
+## 📸 Screenshots
+
+### Landing Page
+![Landing](screenshots/01-landing-page.png)
+
+### Public Jobs
+![Jobs](screenshots/02-public-jobs.png)
+
+### Teacher Profile
+![Teacher Profile](screenshots/03-teacher-profile.png)
+
+### Institute Profile
+![Institute Profile](screenshots/04-institute-profile.png)
+
+### Teacher Dashboard
+![Teacher Dashboard](screenshots/05-teacher-dashboard.png)
+
+### Institute Dashboard
+![Institute Dashboard](screenshots/06-institute-dashboard.png)
+
+### Realtime Chat
+![Chat](screenshots/07-realtime-chat.png)
