@@ -42,7 +42,7 @@
 
 <!-- 🔔 PUBLIC MODE MESSAGE -->
 <div id="loginHint" class="login-hint" style="display:none;">
-  Please register or login to apply for jobs.
+  Please login as a Teacher to apply for jobs.
 </div>
 
 <input id="city" placeholder="City">
@@ -62,24 +62,25 @@
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-/* ✅ LOGIN STATE CHECK */
-const teacherUid = localStorage.getItem("teacherUid");
+/* 🔐 AUTH STATE (FINAL STANDARD) */
+const uid = localStorage.getItem("uid");
+const userType = localStorage.getItem("userType");
 
-/* SHOW HINT IF PUBLIC USER */
-if (!teacherUid) {
+/* SHOW HINT IF NOT LOGGED-IN TEACHER */
+if (!uid || userType !== "teacher") {
   document.getElementById("loginHint").style.display = "block";
 }
 
-/* LOAD JOBS */
+/* LOAD JOBS (PUBLIC) */
 function loadJobs() {
   const city = document.getElementById("city").value;
   const subject = document.getElementById("subject").value;
   const role = document.getElementById("role").value;
 
   let url = `${BASE_URL}/api/job/browse?`;
-  if (city) url += `city=${city}&`;
-  if (subject) url += `subject=${subject}&`;
-  if (role) url += `role=${role}`;
+  if (city) url += `city=${encodeURIComponent(city)}&`;
+  if (subject) url += `subject=${encodeURIComponent(subject)}&`;
+  if (role) url += `role=${encodeURIComponent(role)}`;
 
   fetch(url)
     .then(res => res.json())
@@ -110,13 +111,18 @@ function loadJobs() {
 
         box.appendChild(div);
       });
+    })
+    .catch(() => {
+      document.getElementById("jobs").innerHTML =
+        "<p>Error loading jobs</p>";
     });
 }
 
-/* APPLY JOB */
+/* APPLY JOB (TEACHER ONLY) */
 function applyJob(jobId) {
-  if (!teacherUid) {
-    alert("Please register or login to apply for jobs");
+  if (!uid || userType !== "teacher") {
+    alert("Please login as Teacher to apply");
+    window.location.href = "login.html";
     return;
   }
 
@@ -124,13 +130,16 @@ function applyJob(jobId) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      jobId,
-      teacherUid
+      jobId: jobId,
+      teacherUid: uid
     })
   })
   .then(res => res.json())
   .then(data => {
     alert(data.message || "Applied successfully");
+  })
+  .catch(() => {
+    alert("Server error. Please try again later.");
   });
 }
 
