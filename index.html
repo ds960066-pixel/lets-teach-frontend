@@ -2,137 +2,42 @@
 <html>
 <head>
   <title>Lets Teach</title>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #f4f6f8;
-      color: #333;
-      text-align: center;
-    }
-
-    h1 {
-      margin-bottom: 5px;
-    }
-
-    .tagline {
-      color: #555;
-      margin-bottom: 20px;
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      margin: 20px 0;
-    }
-
-    button {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .primary {
-      background: #128c7e;
-      color: #fff;
-    }
-
-    .secondary {
-      background: #1976d2;
-      color: #fff;
-    }
-
-    .outline {
-      background: transparent;
-      border: 1px solid #555;
-    }
-
-    .test {
-      background: #555;
-      color: #fff;
-    }
-
-    footer {
-      margin-top: 40px;
-      font-size: 13px;
-      color: #777;
-    }
-  </style>
 </head>
 
 <body>
 
-  <h1>Lets Teach</h1>
-  <p class="tagline">Connecting Teachers & Institutes</p>
+<h1>Lets Teach</h1>
+<p>Connecting Teachers & Institutes</p>
 
-  <hr>
+<hr>
 
-  <!-- 🔹 MAIN ACTIONS -->
-  <div class="actions">
-    <button class="primary" onclick="goTeacher()">Teacher Dashboard</button>
-    <button class="secondary" onclick="goInstitute()">Institute Dashboard</button>
-    <button class="outline" onclick="browseJobs()">Browse Jobs</button>
-  </div>
+<h3>Get Started</h3>
+<ul>
+  <li><a href="login.html">Login</a></li>
+  <li><a href="jobs.html">Browse Teaching Jobs</a></li>
+</ul>
 
-  <hr>
+<hr>
 
-  <!-- 🔹 BACKEND TEST (DEV UTILITY) -->
-  <h3>Test Backend Connection</h3>
-  <button class="test" onclick="testAPI()">Test API</button>
-  <p id="result"></p>
+<h3>Interview Preparation (Free)</h3>
+<p>Helpful resources for teachers preparing for school interviews.</p>
+<ul>
+  <li>
+    <a href="interview/index.html">
+      📘 Interview Questions & Demo Class Tips
+    </a>
+  </li>
+</ul>
 
-  <footer>
-    © 2026 Lets Teach • Secure Hiring & Real-time Chat Platform
-  </footer>
+<hr>
 
-  <script>
-    const BASE_URL = "https://express-hello-world-uh96.onrender.com";
-
-    /* -------- AUTH STATE -------- */
-    const uid = localStorage.getItem("uid");
-    const userType = localStorage.getItem("userType");
-
-    /* -------- NAVIGATION -------- */
-    function goTeacher() {
-      if (uid && userType === "teacher") {
-        window.location.href = "teacher-dashboard.html";
-      } else {
-        window.location.href = "login.html";
-      }
-    }
-
-    function goInstitute() {
-      if (uid && userType === "institute") {
-        window.location.href = "institute-dashboard.html";
-      } else {
-        window.location.href = "login.html";
-      }
-    }
-
-    function browseJobs() {
-      window.location.href = "job.html";
-    }
-
-    /* -------- BACKEND TEST -------- */
-    function testAPI() {
-      fetch(`${BASE_URL}/health`)
-        .then(res => res.text())
-        .then(data => {
-          document.getElementById("result").innerText = data;
-        })
-        .catch(() => {
-          document.getElementById("result").innerText =
-            "Error connecting to backend";
-        });
-    }
-  </script>
+<h3>About</h3>
+<p>
+  LETS-TEACH is a public platform where teachers and institutes
+  can connect, send invites, and chat securely after acceptance.
+</p>
 
 </body>
 </html>
