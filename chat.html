@@ -1,183 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Chat | Lets Teach</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  <title>Chat</title>
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #ece5dd;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    header {
-      background: #075e54;
-      color: #fff;
-      padding: 12px;
-      font-weight: bold;
-    }
-
-    #chatBox {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .msg {
-      max-width: 70%;
-      padding: 8px 10px;
-      margin: 6px 0;
-      border-radius: 8px;
-      font-size: 14px;
-      word-wrap: break-word;
-    }
-
-    .me {
-      align-self: flex-end;
-      background: #dcf8c6;
-      border-bottom-right-radius: 0;
-    }
-
-    .other {
-      align-self: flex-start;
-      background: #fff;
-      border-bottom-left-radius: 0;
-    }
-
-    .time {
-      font-size: 10px;
-      color: #555;
-      text-align: right;
-      margin-top: 2px;
-    }
-
-    footer {
-      display: flex;
-      padding: 8px;
-      background: #f0f0f0;
-    }
-
-    footer input {
-      flex: 1;
-      padding: 10px;
-      border-radius: 20px;
-      border: 1px solid #ccc;
-      outline: none;
-    }
-
-    footer button {
-      margin-left: 8px;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 50%;
-      background: #128c7e;
-      color: #fff;
-      font-weight: bold;
-      cursor: pointer;
-    }
-  </style>
 </head>
-
 <body>
 
-<header>
-  Lets Teach Chat
-</header>
+<div id="box"></div>
 
-<div id="chatBox"></div>
-
-<footer>
-  <input id="message" placeholder="Type a message">
-  <button onclick="sendMessage()">➤</button>
-</footer>
+<input id="msg">
+<button onclick="send()">Send</button>
 
 <script>
-const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+const p = new URLSearchParams(location.search);
+const me = p.get("senderUid");
+const other = p.get("receiverUid");
 
-/* -------- URL PARAMS -------- */
-const params = new URLSearchParams(window.location.search);
-const senderUid = params.get("senderUid");
-const receiverUid = params.get("receiverUid");
+const socket = io("https://express-hello-world-uh96.onrender.com");
 
-/* -------- ROOM (LOCKED RULE) -------- */
-const roomId = [senderUid, receiverUid].sort().join("_");
-
-/* -------- SOCKET -------- */
-const socket = io(BASE_URL);
-
-socket.on("connect", () => {
-  socket.emit("joinRoom", roomId);
+socket.on("receiveMessage", m => {
+  const d = document.createElement("div");
+  d.innerText = m.senderUid + ": " + m.text;
+  box.appendChild(d);
 });
 
-/* -------- LOAD CHAT HISTORY -------- */
-fetch(`${BASE_URL}/api/chat/${senderUid}/${receiverUid}`)
-  .then(res => res.json())
-  .then(data => {
-    (data.messages || []).forEach(m => {
-      addMessage(m.senderUid, m.text, m.createdAt);
-    });
-    scrollBottom();
-  });
-
-/* -------- ADD MESSAGE UI -------- */
-function addMessage(from, text, timeVal) {
-  const box = document.getElementById("chatBox");
-
-  const div = document.createElement("div");
-  div.className = "msg " + (from === senderUid ? "me" : "other");
-
-  const time = new Date(timeVal || Date.now()).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-
-  div.innerHTML = `
-    ${text}
-    <div class="time">${time}</div>
-  `;
-
-  box.appendChild(div);
-  scrollBottom();
-}
-
-function scrollBottom() {
-  const box = document.getElementById("chatBox");
-  box.scrollTop = box.scrollHeight;
-}
-
-/* -------- SEND (OPTIMISTIC UI) -------- */
-function sendMessage() {
-  const input = document.getElementById("message");
-  const text = input.value.trim();
-  if (!text) return;
-
-  // ✅ show instantly (WhatsApp feel)
-  addMessage(senderUid, text, Date.now());
-
+function send() {
   socket.emit("sendMessage", {
-    senderUid,
-    receiverUid,
-    text,
-    roomId
+    senderUid: me,
+    receiverUid: other,
+    text: msg.value,
+    roomId: [me, other].sort().join("_")
   });
-
-  input.value = "";
+  msg.value = "";
 }
-
-/* -------- RECEIVE -------- */
-socket.on("receiveMessage", (msg) => {
-  if (msg.senderUid !== senderUid) {
-    addMessage(msg.senderUid, msg.text, msg.createdAt);
-  }
-});
 </script>
 
 </body>
