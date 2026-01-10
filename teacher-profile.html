@@ -1,136 +1,36 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Teacher Profile | Lets Teach</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      padding: 20px;
-    }
-
-    .card {
-      max-width: 600px;
-      margin: auto;
-      background: #fff;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-
-    h2 { margin-top: 0; }
-
-    .badge {
-      display: inline-block;
-      background: #e0f2ff;
-      color: #0077cc;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      margin-bottom: 10px;
-    }
-
-    .field { margin: 10px 0; }
-
-    .label {
-      font-size: 12px;
-      color: #666;
-    }
-
-    .value {
-      font-size: 15px;
-      font-weight: bold;
-    }
-
-    .actions {
-      margin-top: 20px;
-      display: flex;
-      gap: 10px;
-    }
-
-    button {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .invite { background: #128c7e; color: #fff; }
-    .chat   { background: #075e54; color: #fff; }
-  </style>
-</head>
-
+<head><title>Teacher Profile</title></head>
 <body>
 
-<div class="card">
-  <div class="badge">Teacher Profile</div>
-  <h2 id="name">Loading...</h2>
+<h2 id="name">Loading...</h2>
+<p id="info"></p>
 
-  <div class="field">
-    <div class="label">Subject</div>
-    <div class="value" id="subject"></div>
-  </div>
-
-  <div class="field">
-    <div class="label">Experience</div>
-    <div class="value" id="experience"></div>
-  </div>
-
-  <div class="field">
-    <div class="label">City</div>
-    <div class="value" id="city"></div>
-  </div>
-
-  <div class="field">
-    <div class="label">Role</div>
-    <div class="value" id="role"></div>
-  </div>
-
-  <div class="actions">
-    <button class="invite" onclick="sendInvite()">Send Invite</button>
-    <button class="chat" onclick="openChat()">Chat</button>
-  </div>
+<div id="actions">
+  <button onclick="invite()">Invite</button>
+  <button onclick="chat()">Chat</button>
 </div>
 
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
-
-/* -------- AUTH STATE -------- */
 const uid = localStorage.getItem("uid");
-const userType = localStorage.getItem("userType");
+const type = localStorage.getItem("userType");
+const teacherUid = new URLSearchParams(location.search).get("uid");
 
-/* -------- GET TEACHER UID FROM URL -------- */
-const params = new URLSearchParams(window.location.search);
-const teacherUid = params.get("uid");
+if (!teacherUid) location.href = "teacher.html";
+if (!(uid && type === "institute"))
+  actions.style.display = "none";
 
-/* -------- LOAD TEACHER PROFILE -------- */
 fetch(`${BASE_URL}/api/teacher/${teacherUid}`)
-  .then(res => res.json())
-  .then(data => {
-    const t = data.teacher;
-    document.getElementById("name").innerText = t.name;
-    document.getElementById("subject").innerText = t.subject;
-    document.getElementById("experience").innerText =
-      (t.experience || 0) + " years";
-    document.getElementById("city").innerText = t.city;
-    document.getElementById("role").innerText = t.role || "Both";
+  .then(r => r.json())
+  .then(d => {
+    const t = d.teacher;
+    name.innerText = t.name;
+    info.innerText =
+      `${t.subject} | ${t.city} | ${t.experience || 0} yrs`;
   });
 
-/* -------- ACTIONS (STEP-5 FLOW) -------- */
-
-function sendInvite() {
-  // 🔒 only institute can invite
-  if (!uid || userType !== "institute") {
-    window.location.href =
-      `login.html?redirect=teacher-profile&uid=${teacherUid}`;
-    return;
-  }
-
+function invite() {
   fetch(`${BASE_URL}/api/invite/create`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -140,20 +40,11 @@ function sendInvite() {
       toType: "teacher",
       toUid: teacherUid
     })
-  })
-  .then(res => res.json())
-  .then(data => alert(data.message || "Invite sent"));
+  }).then(r => r.json()).then(d => alert(d.message));
 }
 
-function openChat() {
-  // 🔒 only institute can chat from here
-  if (!uid || userType !== "institute") {
-    window.location.href =
-      `login.html?redirect=teacher-profile&uid=${teacherUid}`;
-    return;
-  }
-
-  window.location.href =
+function chat() {
+  location.href =
     `chat.html?senderUid=${uid}&receiverUid=${teacherUid}`;
 }
 </script>
