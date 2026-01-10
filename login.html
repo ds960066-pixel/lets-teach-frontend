@@ -1,75 +1,160 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login | Lets Teach</title>
-  <meta charset="UTF-8" />
+  <title>Teacher Profile | Lets Teach</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 20px;
+    }
+
+    .card {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 { margin-top: 0; }
+
+    .badge {
+      display: inline-block;
+      background: #e0f2ff;
+      color: #0077cc;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    .field { margin: 10px 0; }
+
+    .label {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .value {
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .invite { background: #128c7e; color: #fff; }
+    .chat   { background: #075e54; color: #fff; }
+  </style>
 </head>
+
 <body>
 
-<h2>Login to Lets Teach</h2>
-<p>Select your role to continue</p>
+<div class="card">
+  <div class="badge">Teacher Profile</div>
+  <h2 id="name">Loading...</h2>
 
-<input id="uid" placeholder="Enter UID">
-<br><br>
+  <div class="field">
+    <div class="label">Subject</div>
+    <div class="value" id="subject"></div>
+  </div>
 
-<button onclick="loginTeacher()">Login as Teacher</button>
-<br><br>
+  <div class="field">
+    <div class="label">Experience</div>
+    <div class="value" id="experience"></div>
+  </div>
 
-<button onclick="loginInstitute()">Login as Institute</button>
+  <div class="field">
+    <div class="label">City</div>
+    <div class="value" id="city"></div>
+  </div>
+
+  <div class="field">
+    <div class="label">Role</div>
+    <div class="value" id="role"></div>
+  </div>
+
+  <div class="actions">
+    <button class="invite" onclick="sendInvite()">Send Invite</button>
+    <button class="chat" onclick="openChat()">Chat</button>
+  </div>
+</div>
 
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-/* =========================
-   LOGIN AS TEACHER
-========================= */
-function loginTeacher() {
-  const uid = document.getElementById("uid").value.trim();
-  if (!uid) {
-    alert("Please enter UID");
+/* -------- AUTH STATE -------- */
+const uid = localStorage.getItem("uid");
+const userType = localStorage.getItem("userType");
+
+/* -------- GET TEACHER UID FROM URL -------- */
+const params = new URLSearchParams(window.location.search);
+const teacherUid = params.get("uid");
+
+/* -------- LOAD TEACHER PROFILE -------- */
+fetch(`${BASE_URL}/api/teacher/${teacherUid}`)
+  .then(res => res.json())
+  .then(data => {
+    const t = data.teacher;
+    document.getElementById("name").innerText = t.name;
+    document.getElementById("subject").innerText = t.subject;
+    document.getElementById("experience").innerText =
+      (t.experience || 0) + " years";
+    document.getElementById("city").innerText = t.city;
+    document.getElementById("role").innerText = t.role || "Both";
+  });
+
+/* -------- ACTIONS (STEP-5 FLOW) -------- */
+
+function sendInvite() {
+  // 🔒 only institute can invite
+  if (!uid || userType !== "institute") {
+    window.location.href =
+      `login.html?redirect=teacher-profile&uid=${teacherUid}`;
     return;
   }
 
-  fetch(`${BASE_URL}/api/teacher/${uid}`)
-    .then(res => {
-      localStorage.setItem("uid", uid);
-      localStorage.setItem("userType", "teacher");
-
-      if (res.status === 404) {
-        // ❌ Not registered → registration form
-        window.location.href = `teacher-register.html?uid=${uid}`;
-      } else {
-        // ✅ Registered → dashboard
-        window.location.href = "teacher-dashboard.html";
-      }
+  fetch(`${BASE_URL}/api/invite/create`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      fromType: "institute",
+      fromUid: uid,
+      toType: "teacher",
+      toUid: teacherUid
     })
-    .catch(() => alert("Server error"));
+  })
+  .then(res => res.json())
+  .then(data => alert(data.message || "Invite sent"));
 }
 
-/* =========================
-   LOGIN AS INSTITUTE
-========================= */
-function loginInstitute() {
-  const uid = document.getElementById("uid").value.trim();
-  if (!uid) {
-    alert("Please enter UID");
+function openChat() {
+  // 🔒 only institute can chat from here
+  if (!uid || userType !== "institute") {
+    window.location.href =
+      `login.html?redirect=teacher-profile&uid=${teacherUid}`;
     return;
   }
 
-  fetch(`${BASE_URL}/api/institute/${uid}`)
-    .then(res => {
-      localStorage.setItem("uid", uid);
-      localStorage.setItem("userType", "institute");
-
-      if (res.status === 404) {
-        // ❌ Not registered → registration form
-        window.location.href = `institute-register.html?uid=${uid}`;
-      } else {
-        // ✅ Registered → dashboard
-        window.location.href = "institute-dashboard.html";
-      }
-    })
-    .catch(() => alert("Server error"));
+  window.location.href =
+    `chat.html?senderUid=${uid}&receiverUid=${teacherUid}`;
 }
 </script>
 
