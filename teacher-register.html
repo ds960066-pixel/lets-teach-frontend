@@ -3,39 +3,68 @@
 <head>
   <title>Teacher Registration | Lets Teach</title>
   <meta charset="UTF-8" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    input {
+      padding: 8px;
+      width: 260px;
+    }
+    button {
+      padding: 10px 16px;
+      background: #2e86de;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1b4f72;
+    }
+  </style>
 </head>
+
 <body>
 
 <h2>Teacher Registration</h2>
-
 <p>Please complete your profile</p>
 
 <p><b>UID:</b> <span id="uidText"></span></p>
 
-<input id="name" placeholder="Full Name"><br><br>
+<input id="name" placeholder="Name"><br><br>
 <input id="phone" placeholder="Phone"><br><br>
 <input id="subject" placeholder="Subject"><br><br>
 <input id="city" placeholder="City"><br><br>
+<input id="experience" placeholder="Experience (years)"><br><br>
 
-<button onclick="registerTeacher()">Register</button>
+<button onclick="registerTeacher()">Register & Continue</button>
 
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-// get uid from URL
+/* 🔹 GET UID FROM URL */
 const params = new URLSearchParams(window.location.search);
 const uid = params.get("uid");
 
+if (!uid) {
+  alert("UID missing. Please login again.");
+  window.location.href = "login.html";
+}
+
 document.getElementById("uidText").innerText = uid;
 
+/* 🔹 REGISTER TEACHER */
 function registerTeacher() {
   const name = document.getElementById("name").value.trim();
   const phone = document.getElementById("phone").value.trim();
   const subject = document.getElementById("subject").value.trim();
   const city = document.getElementById("city").value.trim();
+  const experience = document.getElementById("experience").value.trim();
 
   if (!name || !phone || !subject || !city) {
-    alert("Please fill all fields");
+    alert("Please fill all required fields");
     return;
   }
 
@@ -47,7 +76,8 @@ function registerTeacher() {
       name,
       phone,
       subject,
-      city
+      city,
+      experience
     })
   })
   .then(res => res.json())
@@ -56,7 +86,7 @@ function registerTeacher() {
       alert("Registration successful");
       window.location.href = "teacher-dashboard.html";
     } else {
-      alert(data.message || "Error");
+      alert(data.message || "Registration failed");
     }
   })
   .catch(() => alert("Server error"));
