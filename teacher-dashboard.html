@@ -1,164 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Teacher Dashboard | Lets Teach</title>
-  <meta charset="UTF-8" />
+  <title>Teacher Dashboard</title>
 </head>
-
 <body>
 
 <h2>Teacher Dashboard</h2>
 
-<!-- 🔍 NEW FEATURE ENTRY -->
-<button onclick="goBrowseInstitutes()">
-  🔍 Browse Institutes in My City
-</button>
-
-<p id="statusMsg" style="color:red;"></p>
+<button onclick="goRegister()">Complete Profile</button>
+<button onclick="logout()">Logout</button>
 
 <hr>
 
 <h3>My Invites</h3>
 <ul id="inviteList"></ul>
 
-<hr>
-
-<h3>My Chats</h3>
-<ul id="chatList"></ul>
-
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
-
-/* 🔐 AUTH CHECK */
 const uid = localStorage.getItem("uid");
-const userType = localStorage.getItem("userType");
 
-if (!uid || userType !== "teacher") {
-  alert("Please login as Teacher");
+function goRegister() {
+  window.location.href = "teacher-register.html";
+}
+
+function logout() {
+  localStorage.clear();
   window.location.href = "login.html";
 }
 
-/* ================= INVITES ================= */
+fetch(`${BASE_URL}/api/invite/teacher/${uid}`)
+  .then(res => res.json())
+  .then(data => {
+    const list = document.getElementById("inviteList");
+    list.innerHTML = "";
 
-function loadInvites() {
-  const list = document.getElementById("inviteList");
-  list.innerHTML = "Loading invites...";
+    if (!data.invites || data.invites.length === 0) {
+      list.innerHTML = "<li>No invites</li>";
+      return;
+    }
 
-  fetch(`${BASE_URL}/api/invite/teacher/${uid}`)
-    .then(res => res.json())
-    .then(data => {
-      list.innerHTML = "";
-
-      if (!data.invites || data.invites.length === 0) {
-        list.innerHTML = "<li>No invites yet</li>";
-        return;
-      }
-
-      data.invites.forEach(invite => {
-        const li = document.createElement("li");
-
-        li.innerHTML = `
-          <b>From Institute:</b> ${invite.fromUid}<br>
-          <b>Status:</b> ${invite.status}<br>
-        `;
-
-        if (invite.status === "pending") {
-          li.innerHTML += `
-            <button onclick="acceptInvite('${invite._id}')">Accept</button>
-            <button onclick="rejectInvite('${invite._id}')">Reject</button>
-          `;
+    data.invites.forEach(inv => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        From: ${inv.fromUid}<br>
+        Status: ${inv.status}<br>
+        ${
+          inv.status === "pending"
+          ? `<button onclick="accept('${inv._id}')">Accept</button>`
+          : ""
         }
-
-        if (invite.status === "accepted") {
-          li.innerHTML += `
-            <br>
-            <button onclick="openChat('${uid}','${invite.fromUid}')">
-              Open Chat
-            </button>
-          `;
+        ${
+          inv.status === "accepted"
+          ? `<button onclick="chat('${inv.fromUid}')">Chat</button>`
+          : ""
         }
-
-        li.innerHTML += "<hr>";
-        list.appendChild(li);
-      });
-    })
-    .catch(() => {
-      list.innerHTML = "<li>Error loading invites</li>";
+        <hr>
+      `;
+      list.appendChild(li);
     });
-}
+  });
 
-function acceptInvite(id) {
+function accept(id) {
   fetch(`${BASE_URL}/api/invite/accept/${id}`, { method: "POST" })
-    .then(() => {
-      setTimeout(() => {
-        loadInvites();
-        loadMyChats();
-      }, 400);
-    });
+    .then(() => location.reload());
 }
 
-function rejectInvite(id) {
-  fetch(`${BASE_URL}/api/invite/reject/${id}`, { method: "POST" })
-    .then(() => setTimeout(loadInvites, 300));
-}
-
-/* ================= CHAT LIST ================= */
-
-function loadMyChats() {
-  const list = document.getElementById("chatList");
-  list.innerHTML = "Loading chats...";
-
-  fetch(`${BASE_URL}/api/chat/list/${uid}`)
-    .then(res => res.json())
-    .then(data => {
-      list.innerHTML = "";
-
-      if (!data.chats || data.chats.length === 0) {
-        list.innerHTML = "<li>No chats yet</li>";
-        return;
-      }
-
-      data.chats.forEach(chat => {
-        const time = chat.time
-          ? new Date(chat.time).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit"
-            })
-          : "";
-
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <b>${chat.with}</b><br>
-          <small>${chat.lastText || ""}</small><br>
-          <small>${time}</small><br>
-          <button onclick="openChat('${uid}','${chat.with}')">
-            Open Chat
-          </button>
-          <hr>
-        `;
-        list.appendChild(li);
-      });
-    })
-    .catch(() => {
-      list.innerHTML = "<li>Error loading chats</li>";
-    });
-}
-
-/* ================= NAVIGATION ================= */
-
-function goBrowseInstitutes() {
-  window.location.href = "teacher-institute-browse.html";
-}
-
-function openChat(me, other) {
+function chat(other) {
   window.location.href =
-    `chat.html?senderUid=${me}&receiverUid=${other}`;
+    `chat.html?senderUid=${uid}&receiverUid=${other}`;
 }
-
-/* ================= AUTO LOAD ================= */
-
-loadInvites();
-loadMyChats();
 </script>
 
 </body>
