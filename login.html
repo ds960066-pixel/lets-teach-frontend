@@ -7,8 +7,10 @@
 <body>
 
 <h2>Login to Lets Teach</h2>
-
 <p>Select your role to continue</p>
+
+<input id="uid" placeholder="Enter UID">
+<br><br>
 
 <button onclick="loginTeacher()">Login as Teacher</button>
 <br><br>
@@ -16,16 +18,58 @@
 <button onclick="loginInstitute()">Login as Institute</button>
 
 <script>
+const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+
+/* =========================
+   LOGIN AS TEACHER
+========================= */
 function loginTeacher() {
-  localStorage.setItem("uid", "demof12345");
-  localStorage.setItem("userType", "teacher");
-  window.location.href = "teacher-dashboard.html";
+  const uid = document.getElementById("uid").value.trim();
+  if (!uid) {
+    alert("Please enter UID");
+    return;
+  }
+
+  fetch(`${BASE_URL}/api/teacher/${uid}`)
+    .then(res => {
+      localStorage.setItem("uid", uid);
+      localStorage.setItem("userType", "teacher");
+
+      if (res.status === 404) {
+        // ❌ Not registered → registration form
+        window.location.href = `teacher-register.html?uid=${uid}`;
+      } else {
+        // ✅ Registered → dashboard
+        window.location.href = "teacher-dashboard.html";
+      }
+    })
+    .catch(() => alert("Server error"));
 }
 
+/* =========================
+   LOGIN AS INSTITUTE
+========================= */
 function loginInstitute() {
-  localStorage.setItem("uid", "school321");
-  localStorage.setItem("userType", "institute");
-  window.location.href = "institute-dashboard.html";
+  const uid = document.getElementById("uid").value.trim();
+  if (!uid) {
+    alert("Please enter UID");
+    return;
+  }
+
+  fetch(`${BASE_URL}/api/institute/${uid}`)
+    .then(res => {
+      localStorage.setItem("uid", uid);
+      localStorage.setItem("userType", "institute");
+
+      if (res.status === 404) {
+        // ❌ Not registered → registration form
+        window.location.href = `institute-register.html?uid=${uid}`;
+      } else {
+        // ✅ Registered → dashboard
+        window.location.href = "institute-dashboard.html";
+      }
+    })
+    .catch(() => alert("Server error"));
 }
 </script>
 
