@@ -1,27 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Teacher Registration</title>
+  <title>Teacher Register</title>
 </head>
 <body>
 
 <h2>Teacher Registration</h2>
-<p>UID: <b id="uidText"></b></p>
 
 <input id="name" placeholder="Name"><br><br>
 <input id="phone" placeholder="Phone"><br><br>
 <input id="subject" placeholder="Subject"><br><br>
 <input id="city" placeholder="City"><br><br>
-<input id="experience" placeholder="Experience"><br><br>
 
 <button onclick="register()">Register</button>
 
 <script>
+const uid = localStorage.getItem("uid");
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
-const uid = new URLSearchParams(location.search).get("uid");
-
-if (!uid) location.href = "login.html";
-document.getElementById("uidText").innerText = uid;
 
 function register() {
   fetch(`${BASE_URL}/api/teacher/create`, {
@@ -32,14 +27,13 @@ function register() {
       name: name.value,
       phone: phone.value,
       subject: subject.value,
-      city: city.value,
-      experience: experience.value
+      city: city.value
     })
   })
-  .then(r => r.json())
-  .then(d => {
-    if (d.success) location.href = "teacher-dashboard.html";
-    else alert(d.message);
+  .then(res => res.json())
+  .then(() => {
+    alert("Registered");
+    window.location.href = "teacher-dashboard.html";
   });
 }
 </script>
