@@ -1,82 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Institute Registration | Lets Teach</title>
-  <meta charset="UTF-8" />
+  <title>Institute Registration</title>
 </head>
 <body>
 
 <h2>Institute Registration</h2>
-<p>Please complete your institute details</p>
-
-<p><b>UID:</b> <span id="uidText"></span></p>
+<p>UID: <b id="uidText"></b></p>
 
 <input id="name" placeholder="Institute Name"><br><br>
 <input id="phone" placeholder="Phone"><br><br>
 <input id="city" placeholder="City"><br><br>
-<input id="address" placeholder="Address"><br><br>
-<input id="subjectsNeeded" placeholder="Subjects Needed (comma separated)"><br><br>
+<input id="subjects" placeholder="Subjects (comma)"><br><br>
 
-<button onclick="registerInstitute()">Register</button>
-
-<p id="result"></p>
+<button onclick="register()">Register</button>
 
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+const uid = new URLSearchParams(location.search).get("uid");
 
-/* 🔹 GET UID FROM URL */
-const params = new URLSearchParams(window.location.search);
-const uid = params.get("uid");
+if (!uid) location.href = "login.html";
+uidText.innerText = uid;
 
-if (!uid) {
-  alert("UID missing. Please login again.");
-  window.location.href = "login.html";
-}
-
-document.getElementById("uidText").innerText = uid;
-
-/* 🔹 REGISTER INSTITUTE */
-function registerInstitute() {
-  const name = document.getElementById("name").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const city = document.getElementById("city").value.trim();
-  const address = document.getElementById("address").value.trim();
-  const subjectsRaw = document.getElementById("subjectsNeeded").value.trim();
-
-  if (!name || !phone || !city) {
-    alert("Please fill required fields");
-    return;
-  }
-
-  const subjectsNeeded = subjectsRaw
-    ? subjectsRaw.split(",").map(s => s.trim())
-    : [];
-
+function register() {
   fetch(`${BASE_URL}/api/institute/create`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       uid,
-      name,
-      phone,
-      city,
-      address,
-      subjectsNeeded
+      name: name.value,
+      phone: phone.value,
+      city: city.value,
+      subjectsNeeded: subjects.value.split(",").map(s => s.trim())
     })
   })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      alert("Institute registered successfully");
-      window.location.href = "institute-dashboard.html";
-    } else {
-      document.getElementById("result").innerText =
-        data.message || "Registration failed";
-    }
-  })
-  .catch(() => {
-    document.getElementById("result").innerText =
-      "Error connecting to backend";
+  .then(r => r.json())
+  .then(d => {
+    if (d.success) location.href = "institute-dashboard.html";
+    else alert(d.message);
   });
 }
 </script>
