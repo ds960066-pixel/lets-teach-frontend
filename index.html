@@ -20,25 +20,21 @@
 
 <hr>
 
-<h3>Filter</h3>
+<h3>Search</h3>
 
-<select id="city">
-  <option value="">Select City</option>
-  <option value="Delhi">Delhi</option>
-  <option value="Mumbai">Mumbai</option>
-  <option value="Patna">Patna</option>
-  <option value="Lucknow">Lucknow</option>
-</select>
+<input
+  id="city"
+  placeholder="Enter city (e.g. Patna, Delhi, Gaya)"
+  autocomplete="off"
+/>
 
-<select id="subject">
-  <option value="">Select Subject</option>
-  <option value="Math">Math</option>
-  <option value="Science">Science</option>
-  <option value="English">English</option>
-  <option value="Hindi">Hindi</option>
-</select>
+<input
+  id="subject"
+  placeholder="Enter subject (e.g. Math, Physics, English)"
+  autocomplete="off"
+/>
 
-<button onclick="applyFilter()">Apply Filter</button>
+<button onclick="applyFilter()">Search</button>
 
 <hr>
 
@@ -55,8 +51,8 @@ const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
 /* ================= APPLY FILTER ================= */
 function applyFilter() {
-  const city = document.getElementById("city").value;
-  const subject = document.getElementById("subject").value;
+  const city = document.getElementById("city").value.trim();
+  const subject = document.getElementById("subject").value.trim();
 
   loadTeachers(city, subject);
   loadInstitutes(city);
@@ -88,9 +84,8 @@ function loadTeachers(city = "", subject = "") {
       data.teachers.forEach(t => {
         const li = document.createElement("li");
         li.innerHTML = `
-          <b>${t.name}</b> — ${t.subject} (${t.city})
-          <br>
-          <a href="teacher-public.html?uid=${t.uid}">View Profile</a>
+          <b>${t.name}</b> — ${t.subject} (${t.city})<br>
+          <a href="teacher.html?uid=${t.uid}">View Profile</a>
           |
           <a href="login.html">Send Invite</a>
           <hr>
@@ -103,10 +98,7 @@ function loadTeachers(city = "", subject = "") {
 /* ================= LOAD INSTITUTES ================= */
 function loadInstitutes(city = "") {
   let url = `${BASE_URL}/api/institute/browse`;
-
-  if (city) {
-    url += `?city=${encodeURIComponent(city)}`;
-  }
+  if (city) url += `?city=${encodeURIComponent(city)}`;
 
   fetch(url)
     .then(res => res.json())
@@ -122,9 +114,8 @@ function loadInstitutes(city = "") {
       data.institutes.forEach(i => {
         const li = document.createElement("li");
         li.innerHTML = `
-          <b>${i.name}</b> — ${i.city}
-          <br>
-          <a href="institute-public.html?uid=${i.uid}">View Profile</a>
+          <b>${i.name}</b> — ${i.city}<br>
+          <a href="institute.html?uid=${i.uid}">View Profile</a>
           |
           <a href="login.html">Send Invite</a>
           <hr>
