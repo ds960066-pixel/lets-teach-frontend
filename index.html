@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Lets Teach | Find Verified Teachers & Institutes</title>
+  <title>Lets Teach | Find Teachers & Institutes</title>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="description"
-        content="Find verified teachers and verified institutes by city and subject. Lets Teach is a free public platform for education hiring." />
+        content="Find teachers and institutes by city and subject. Lets Teach is a free public platform for education hiring." />
 
   <meta name="keywords"
-        content="verified teachers, verified institutes, teaching jobs, school hiring, lets teach" />
+        content="teachers, institutes, teaching jobs, school hiring, lets teach" />
 </head>
 
 <body>
 
 <h1>Lets Teach</h1>
-<p>Find <b>Verified Teachers</b> & <b>Verified Institutes</b> — No Login Required</p>
+<p>Find Teachers & Institutes — <b>No Login Required</b></p>
 
 <hr>
 
@@ -38,12 +38,12 @@
 
 <hr>
 
-<h2>Verified Teachers</h2>
+<h2>Teachers</h2>
 <ul id="teachers"></ul>
 
 <hr>
 
-<h2>Verified Institutes</h2>
+<h2>Institutes</h2>
 <ul id="institutes"></ul>
 
 <hr>
@@ -65,7 +65,7 @@ function applyFilter() {
   loadInstitutes(city);
 }
 
-/* ================= LOAD VERIFIED TEACHERS (PUBLIC) ================= */
+/* ================= LOAD TEACHERS (SEMI-PUBLIC) ================= */
 function loadTeachers(city = "", subject = "") {
   let url = `${BASE_URL}/api/teacher/public`;
 
@@ -84,14 +84,20 @@ function loadTeachers(city = "", subject = "") {
       ul.innerHTML = "";
 
       if (!data.teachers || data.teachers.length === 0) {
-        ul.innerHTML = "<li>No verified teachers found</li>";
+        ul.innerHTML = "<li>No teachers found</li>";
         return;
       }
 
       data.teachers.forEach(t => {
+        const statusTag =
+          t.verificationStatus !== "verified"
+            ? " <small style='color:red'>(Unverified)</small>"
+            : " <small style='color:green'>(Verified)</small>";
+
         const li = document.createElement("li");
         li.innerHTML = `
-          <b>${t.name}</b> — ${t.subject} (${t.city})<br>
+          <b>${t.name}</b>${statusTag}<br>
+          ${t.subject} — ${t.city}<br>
           Experience: ${t.experience || 0} yrs<br>
           <a href="teacher.html?uid=${t.uid}">View Profile</a>
           <hr>
@@ -105,7 +111,7 @@ function loadTeachers(city = "", subject = "") {
     });
 }
 
-/* ================= LOAD VERIFIED INSTITUTES (PUBLIC) ================= */
+/* ================= LOAD INSTITUTES (SEMI-PUBLIC) ================= */
 function loadInstitutes(city = "") {
   let url = `${BASE_URL}/api/institute/public`;
 
@@ -120,14 +126,20 @@ function loadInstitutes(city = "") {
       ul.innerHTML = "";
 
       if (!data.institutes || data.institutes.length === 0) {
-        ul.innerHTML = "<li>No verified institutes found</li>";
+        ul.innerHTML = "<li>No institutes found</li>";
         return;
       }
 
       data.institutes.forEach(i => {
+        const statusTag =
+          i.verificationStatus !== "verified"
+            ? " <small style='color:red'>(Unverified)</small>"
+            : " <small style='color:green'>(Verified)</small>";
+
         const li = document.createElement("li");
         li.innerHTML = `
-          <b>${i.name}</b> (${i.city})<br>
+          <b>${i.name}</b>${statusTag}<br>
+          ${i.city}<br>
           Subjects Needed: ${(i.subjectsNeeded || []).join(", ") || "—"}<br>
           <a href="institute.html?uid=${i.uid}">View Profile</a>
           <hr>
