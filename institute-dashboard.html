@@ -1,19 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Institute Dashboard</title>
 </head>
 <body>
 
+<script>
+/* ================= AUTH + ROLE GUARD ================= */
+if (!localStorage.uid || localStorage.role !== "institute") {
+  window.location.href = "login.html";
+}
+</script>
+
 <h2>Institute Dashboard</h2>
 
-<button onclick="goRegister()">Complete Profile</button>
 <button onclick="logout()">Logout</button>
 
 <hr>
 
 <h3>Browse Teachers</h3>
-<button onclick="browse()">Load Teachers</button>
+<button onclick="browseTeachers()">Load Teachers</button>
 
 <ul id="list"></ul>
 
@@ -21,47 +28,61 @@
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 const uid = localStorage.getItem("uid");
 
-function goRegister() {
-  window.location.href = "institute-register.html";
-}
-
+/* ================= LOGOUT ================= */
 function logout() {
   localStorage.clear();
   window.location.href = "login.html";
 }
 
-function browse() {
-  fetch(`${BASE_URL}/api/teacher/browse`)
-    .then(res => res.json())
-    .then(data => {
-      const list = document.getElementById("list");
-      list.innerHTML = "";
+/* ================= BROWSE TEACHERS ================= */
+async function browseTeachers() {
+  try {
+    const res = await fetch(`${BASE_URL}/api/teacher/browse`);
+    const data = await res.json();
 
-      data.teachers.forEach(t => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          ${t.name} - ${t.subject}<br>
-          <button onclick="invite('${t.uid}')">Invite</button>
-          <hr>
-        `;
-        list.appendChild(li);
-      });
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    if (!data.teachers || data.teachers.length === 0) {
+      list.innerHTML = "<li>No teachers found</li>";
+      return;
+    }
+
+    data.teachers.forEach(t => {
+      const li = document.createElement("li");
+
+      li.innerHTML = `
+        <b>${t.name}</b> – ${t.subject} (${t.city || ""})<br>
+        <button onclick="sendInvite('${t.uid}')">Invite</button>
+        <hr>
+      `;
+
+      list.appendChild(li);
     });
+  } catch (err) {
+    alert("Failed to load teachers");
+  }
 }
 
-function invite(tid) {
-  fetch(`${BASE_URL}/api/invite/create`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      fromType: "institute",
-      fromUid: uid,
-      toType: "teacher",
-      toUid: tid
-    })
-  })
-  .then(res => res.json())
-  .then(d => alert(d.message || "Invite sent"));
+/* ================= SEND INVITE ================= */
+async function sendInvite(teacherUid) {
+  try {
+    const res = await fetch(`${BASE_URL}/api/invite/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fromType: "institute",
+        fromUid: uid,
+        toType: "teacher",
+        toUid: teacherUid
+      })
+    });
+
+    const data = await res.json();
+    alert(data.message || "Invite sent");
+  } catch (err) {
+    alert("Invite failed");
+  }
 }
 </script>
 
