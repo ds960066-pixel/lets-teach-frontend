@@ -27,22 +27,35 @@
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
 function save() {
+  const payload = {
+    name: document.getElementById("name").value.trim(),
+    city: document.getElementById("city").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    isRegistered: document.getElementById("isRegistered").checked,
+    linkedInstituteUid:
+      document.getElementById("linkedUid").value.trim() || null
+  };
+
+  if (!payload.name || !payload.city) {
+    msg.innerText = "Name and City are required ❌";
+    return;
+  }
+
   fetch(`${BASE_URL}/api/manual-institute/create`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name: name.value,
-      city: city.value,
-      phone: phone.value,
-      email: email.value,
-      isRegistered: isRegistered.checked,
-      linkedInstituteUid: linkedUid.value || null
-    })
+    body: JSON.stringify(payload)
   })
-  .then(r => r.json())
-  .then(d => {
-    msg.innerText = d.success ? "Saved successfully ✅" : d.message;
-  });
+    .then(r => r.json())
+    .then(d => {
+      msg.innerText = d.success
+        ? "Saved successfully ✅"
+        : d.message || "Error ❌";
+    })
+    .catch(() => {
+      msg.innerText = "Server error ❌";
+    });
 }
 </script>
 
