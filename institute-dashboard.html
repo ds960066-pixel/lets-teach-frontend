@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Institute Dashboard</title>
+  <title>Institute Dashboard | Lets Teach</title>
 </head>
 <body>
 
@@ -53,7 +53,13 @@ async function browseTeachers() {
 
       li.innerHTML = `
         <b>${t.name}</b> – ${t.subject} (${t.city || ""})<br>
-        <button onclick="sendInvite('${t.uid}')">Invite</button>
+        <a href="teacher.html?uid=${t.uid}">
+          View Profile
+        </a>
+        <br><br>
+        <button id="btn-${t.uid}" onclick="sendInvite('${t.uid}')">
+          Send Invite
+        </button>
         <hr>
       `;
 
@@ -66,6 +72,9 @@ async function browseTeachers() {
 
 /* ================= SEND INVITE ================= */
 async function sendInvite(teacherUid) {
+  const btn = document.getElementById(`btn-${teacherUid}`);
+  if (btn) btn.disabled = true;
+
   try {
     const res = await fetch(`${BASE_URL}/api/invite/create`, {
       method: "POST",
@@ -82,6 +91,7 @@ async function sendInvite(teacherUid) {
     alert(data.message || "Invite sent");
   } catch (err) {
     alert("Invite failed");
+    if (btn) btn.disabled = false;
   }
 }
 </script>
