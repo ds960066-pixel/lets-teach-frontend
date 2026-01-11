@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Teacher Registration | Lets Teach</title>
   <meta charset="UTF-8" />
+  <title>Teacher Registration | Lets Teach</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,6 +13,7 @@
     input {
       padding: 8px;
       width: 260px;
+      margin-bottom: 10px;
     }
     button {
       padding: 10px 16px;
@@ -28,35 +30,36 @@
 
 <body>
 
+<script>
+/* ================= AUTH + ROLE GUARD ================= */
+if (!localStorage.uid || localStorage.role !== "teacher") {
+  window.location.href = "login.html";
+}
+</script>
+
 <h2>Teacher Registration</h2>
 <p>Please complete your profile</p>
 
 <p><b>UID:</b> <span id="uidText"></span></p>
 
-<input id="name" placeholder="Name"><br><br>
-<input id="phone" placeholder="Phone"><br><br>
-<input id="subject" placeholder="Subject"><br><br>
-<input id="city" placeholder="City"><br><br>
-<input id="experience" placeholder="Experience (years)"><br><br>
+<input id="name" placeholder="Name" />
+<input id="phone" placeholder="Phone" />
+<input id="subject" placeholder="Subject" />
+<input id="city" placeholder="City" />
+<input id="experience" placeholder="Experience (years)" />
 
+<br>
 <button onclick="registerTeacher()">Register & Continue</button>
 
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-/* 🔹 GET UID FROM URL */
-const params = new URLSearchParams(window.location.search);
-const uid = params.get("uid");
-
-if (!uid) {
-  alert("UID missing. Please login again.");
-  window.location.href = "login.html";
-}
-
+/* ================= SOURCE OF TRUTH ================= */
+const uid = localStorage.getItem("uid");
 document.getElementById("uidText").innerText = uid;
 
-/* 🔹 REGISTER TEACHER */
-function registerTeacher() {
+/* ================= REGISTER ================= */
+async function registerTeacher() {
   const name = document.getElementById("name").value.trim();
   const phone = document.getElementById("phone").value.trim();
   const subject = document.getElementById("subject").value.trim();
@@ -68,28 +71,32 @@ function registerTeacher() {
     return;
   }
 
-  fetch(`${BASE_URL}/api/teacher/create`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      uid,
-      name,
-      phone,
-      subject,
-      city,
-      experience
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      alert("Registration successful");
-      window.location.href = "teacher-dashboard.html";
-    } else {
+  try {
+    const res = await fetch(`${BASE_URL}/api/teacher/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uid,
+        name,
+        phone,
+        subject,
+        city,
+        experience
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
       alert(data.message || "Registration failed");
+      return;
     }
-  })
-  .catch(() => alert("Server error"));
+
+    // ✅ AUTO REDIRECT TO DASHBOARD
+    window.location.href = "teacher-dashboard.html";
+  } catch (err) {
+    alert("Server error");
+  }
 }
 </script>
 
