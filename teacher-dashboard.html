@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Teacher Dashboard</title>
+  <title>Teacher Dashboard | Lets Teach</title>
 </head>
 <body>
 
@@ -52,16 +52,21 @@ async function loadInvites() {
       let actions = "";
 
       if (inv.status === "pending") {
-        actions = `<button onclick="acceptInvite('${inv._id}')">Accept</button>`;
+        actions = `
+          <button onclick="acceptInvite('${inv._id}')">Accept</button>
+          <button onclick="rejectInvite('${inv._id}')">Reject</button>
+        `;
       }
 
       if (inv.status === "accepted") {
-        actions = `<button onclick="openChat('${inv.fromUid}')">Chat</button>`;
+        actions = `
+          <button onclick="openChat('${inv.fromUid}')">Open Chat</button>
+        `;
       }
 
       li.innerHTML = `
-        <b>From:</b> ${inv.fromUid}<br>
-        <b>Status:</b> ${inv.status}<br>
+        <b>From Institute:</b> ${inv.fromUid}<br>
+        <b>Status:</b> ${inv.status.toUpperCase()}<br>
         ${actions}
         <hr>
       `;
@@ -81,13 +86,21 @@ async function acceptInvite(id) {
   loadInvites();
 }
 
-/* ================= OPEN CHAT ================= */
-function openChat(otherUid) {
-  // 🔒 SAVE CHAT CONTEXT
-  localStorage.setItem("chatWith", otherUid);
-  window.location.href = "chat.html";
+/* ================= REJECT INVITE ================= */
+async function rejectInvite(id) {
+  await fetch(`${BASE_URL}/api/invite/reject/${id}`, {
+    method: "POST"
+  });
+  loadInvites();
 }
 
+/* ================= OPEN CHAT ================= */
+function openChat(instituteUid) {
+  window.location.href =
+    `chat.html?senderUid=${uid}&receiverUid=${instituteUid}`;
+}
+
+/* ================= INIT ================= */
 loadInvites();
 </script>
 
