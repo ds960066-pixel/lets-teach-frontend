@@ -1,50 +1,79 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Institute Registration | Lets Teach</title>
+  <title>Institutes | Lets Teach</title>
+  <meta charset="UTF-8" />
 </head>
 <body>
 
-  <h2>Institute Registration</h2>
+<h2>Browse Institutes</h2>
 
-  <input id="uid" placeholder="Firebase UID"><br><br>
-  <input id="name" placeholder="Institute Name"><br><br>
-  <input id="phone" placeholder="Phone"><br><br>
-  <input id="city" placeholder="City"><br><br>
-  <input id="address" placeholder="Address"><br><br>
-  <input id="subjectsNeeded" placeholder="Subjects Needed"><br><br>
+<input id="city" placeholder="Enter city">
+<button onclick="loadInstitutes()">Search</button>
 
-  <button onclick="registerInstitute()">Register</button>
+<hr>
 
-  <p id="result"></p>
+<ul id="list"></ul>
 
-  <script>
-    function registerInstitute() {
-      fetch("https://express-hello-world-uh96.onrender.com/api/institute/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          uid: document.getElementById("uid").value,
-          name: document.getElementById("name").value,
-          phone: document.getElementById("phone").value,
-          city: document.getElementById("city").value,
-          address: document.getElementById("address").value,
-          subjectsNeeded: document.getElementById("subjectsNeeded").value
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("result").innerText =
-          data.message || "Institute registered";
-      })
-      .catch(() => {
-        document.getElementById("result").innerText =
-          "Error connecting to backend";
+<script>
+const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+
+function loadInstitutes() {
+  const city = document.getElementById("city").value.trim();
+  let url = `${BASE_URL}/api/institute/browse`;
+  if (city) url += `?city=${encodeURIComponent(city)}`;
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      const ul = document.getElementById("list");
+      ul.innerHTML = "";
+
+      if (!data.institutes || data.institutes.length === 0) {
+        ul.innerHTML = "<li>No institutes found</li>";
+        return;
+      }
+
+      data.institutes.forEach(i => {
+        const li = document.createElement("li");
+
+        li.innerHTML = `
+          <b>${i.name}</b> (${i.city})<br>
+          Subjects: ${(i.subjectsNeeded || []).join(", ") || "—"}<br>
+        `;
+
+        if (i.registered) {
+          li.innerHTML += `
+            <button onclick="invite('${i.uid}')">
+              Invite / Chat
+            </button>
+          `;
+        } else {
+          li.innerHTML += `
+            <small>📞 Contact institute to register</small>
+          `;
+        }
+
+        li.innerHTML += "<hr>";
+        ul.appendChild(li);
       });
-    }
-  </script>
+    })
+    .catch(() => alert("Server error"));
+}
+
+function invite(uid) {
+  const me = localStorage.getItem("uid");
+  const type = localStorage.getItem("userType");
+
+  if (!me || type !== "teacher") {
+    alert("Login as teacher to invite");
+    window.location.href = "login.html";
+    return;
+  }
+
+  window.location.href = `teacher-dashboard.html`;
+}
+</script>
 
 </body>
 </html>
