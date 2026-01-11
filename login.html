@@ -2,26 +2,82 @@
 <html>
 <head>
   <title>Login | Lets Teach</title>
+  <meta charset="UTF-8" />
 </head>
 <body>
 
-<h2>Login</h2>
-<p>Select role</p>
+<h2>Login to Lets Teach</h2>
+<p>Select your role to continue</p>
 
-<button onclick="loginTeacher()">Login as Teacher</button><br><br>
+<input id="uid" placeholder="Enter UID">
+<br><br>
+
+<button onclick="loginTeacher()">Login as Teacher</button>
+<br><br>
+
 <button onclick="loginInstitute()">Login as Institute</button>
 
 <script>
+const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+
+/* ================= LOGIN AS TEACHER ================= */
 function loginTeacher() {
-  localStorage.setItem("uid", "demof12345");
-  localStorage.setItem("userType", "teacher");
-  window.location.href = "teacher-dashboard.html";
+  const uid = document.getElementById("uid").value.trim();
+  if (!uid) {
+    alert("Enter UID");
+    return;
+  }
+
+  fetch(`${BASE_URL}/api/teacher/${uid}`)
+    .then(res => {
+      console.log("Teacher API status:", res.status);
+
+      localStorage.setItem("uid", uid);
+      localStorage.setItem("userType", "teacher");
+
+      if (res.status === 404) {
+        // 👇 REGISTRATION PAGE
+        window.location.href =
+          "teacher-register.html?uid=" + uid;
+      } else if (res.ok) {
+        // 👇 DASHBOARD
+        window.location.href =
+          "teacher-dashboard.html";
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Server error");
+    });
 }
 
+/* ================= LOGIN AS INSTITUTE ================= */
 function loginInstitute() {
-  localStorage.setItem("uid", "school321");
-  localStorage.setItem("userType", "institute");
-  window.location.href = "institute-dashboard.html";
+  const uid = document.getElementById("uid").value.trim();
+  if (!uid) {
+    alert("Enter UID");
+    return;
+  }
+
+  fetch(`${BASE_URL}/api/institute/${uid}`)
+    .then(res => {
+      console.log("Institute API status:", res.status);
+
+      localStorage.setItem("uid", uid);
+      localStorage.setItem("userType", "institute");
+
+      if (res.status === 404) {
+        window.location.href =
+          "institute-register.html?uid=" + uid;
+      } else if (res.ok) {
+        window.location.href =
+          "institute-dashboard.html";
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Server error");
+    });
 }
 </script>
 
