@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Lets Teach Chat</title>
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
@@ -54,6 +55,17 @@
 
 <body>
 
+<script>
+/* ================= AUTH + CONTEXT GUARD ================= */
+if (
+  !localStorage.uid ||
+  !localStorage.role ||
+  !localStorage.chatWith
+) {
+  window.location.href = "login.html";
+}
+</script>
+
 <h3>Chat</h3>
 
 <div id="chatBox"></div>
@@ -64,13 +76,15 @@
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-/* ---------- PARAMS ---------- */
-const params = new URLSearchParams(window.location.search);
-const senderUid = params.get("senderUid");
-const receiverUid = params.get("receiverUid");
+/* ---------- SOURCE OF TRUTH ---------- */
+const senderUid = localStorage.getItem("uid");
+const receiverUid = localStorage.getItem("chatWith");
 
-/* ---------- ROOM ID ---------- */
-const roomId = [senderUid, receiverUid].sort().join("_");
+/* ---------- ROOM ID (DETERMINISTIC) ---------- */
+const roomId =
+  senderUid < receiverUid
+    ? `${senderUid}_${receiverUid}`
+    : `${receiverUid}_${senderUid}`;
 
 /* ---------- SOCKET ---------- */
 const socket = io(BASE_URL);
@@ -79,7 +93,7 @@ socket.on("connect", () => {
   socket.emit("joinRoom", roomId);
 });
 
-/* ---------- UI HELPERS ---------- */
+/* ---------- UI HELPER ---------- */
 function appendMessage(from, text) {
   const box = document.getElementById("chatBox");
   const div = document.createElement("div");
@@ -91,24 +105,25 @@ function appendMessage(from, text) {
 
 /* ---------- SEND ---------- */
 function sendMessage() {
-  const text = document.getElementById("message").value.trim();
+  const input = document.getElementById("message");
+  const text = input.value.trim();
   if (!text) return;
 
-  // ✅ show instantly (important fix)
+  // show instantly
   appendMessage(senderUid, text);
 
   socket.emit("sendMessage", {
     senderUid,
     receiverUid,
-    text,
-    roomId
+    text
   });
 
-  document.getElementById("message").value = "";
+  input.value = "";
 }
 
 /* ---------- RECEIVE ---------- */
 socket.on("receiveMessage", (msg) => {
+  // avoid duplicate self-message
   if (msg.senderUid !== senderUid) {
     appendMessage(msg.senderUid, msg.text);
   }
