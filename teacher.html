@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Teachers | Lets Teach</title>
   <meta charset="UTF-8" />
+  <title>Browse Teachers | Lets Teach</title>
 </head>
 <body>
 
@@ -24,9 +24,15 @@ function loadTeachers() {
   const city = document.getElementById("city").value.trim();
   const subject = document.getElementById("subject").value.trim();
 
-  let url = `${BASE_URL}/api/teacher/browse?`;
-  if (city) url += `city=${encodeURIComponent(city)}&`;
-  if (subject) url += `subject=${encodeURIComponent(subject)}`;
+  let url = `${BASE_URL}/api/teacher/browse`;
+  const params = [];
+
+  if (city) params.push(`city=${encodeURIComponent(city)}`);
+  if (subject) params.push(`subject=${encodeURIComponent(subject)}`);
+
+  if (params.length) {
+    url += "?" + params.join("&");
+  }
 
   fetch(url)
     .then(res => res.json())
@@ -39,6 +45,9 @@ function loadTeachers() {
         return;
       }
 
+      const myRole = localStorage.getItem("role");
+      const myUid = localStorage.getItem("uid");
+
       data.teachers.forEach(t => {
         const li = document.createElement("li");
 
@@ -47,12 +56,13 @@ function loadTeachers() {
           City: ${t.city}<br>
           Experience: ${t.experience ?? 0} yrs<br>
           Role: ${t.role || "Both"}<br>
+          <a href="teacher.html?uid=${t.uid}">
+            View Profile
+          </a>
+          <br>
         `;
 
-        const myType = localStorage.getItem("userType");
-        const myUid = localStorage.getItem("uid");
-
-        if (myType === "institute" && myUid) {
+        if (myRole === "institute" && myUid) {
           li.innerHTML += `
             <button onclick="sendInvite('${t.uid}')">
               Invite Teacher
@@ -60,7 +70,11 @@ function loadTeachers() {
           `;
         } else {
           li.innerHTML += `
-            <small>Login as institute to invite</small>
+            <small>
+              <a href="login.html">
+                Login as institute to invite
+              </a>
+            </small>
           `;
         }
 
@@ -97,6 +111,9 @@ function sendInvite(teacherUid) {
   })
   .catch(() => alert("Error sending invite"));
 }
+
+/* ================= INITIAL LOAD ================= */
+loadTeachers();
 </script>
 
 </body>
