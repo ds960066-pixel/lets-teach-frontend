@@ -1,120 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Lets Teach | Teaching Jobs, Teachers & Institutes</title>
+  <title>Lets Teach | Find Teachers & Institutes</title>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- 🔍 SEO META -->
   <meta name="description"
-        content="Lets Teach is a free public platform to find teachers, browse institutes, explore teaching jobs, and prepare for interviews." />
+        content="Find teachers and institutes by city and subject. Free public platform for teaching jobs and interview preparation." />
 
   <meta name="keywords"
-        content="teaching jobs, teachers, institutes, school jobs, teacher interview preparation, lets teach" />
-
-  <meta name="google-site-verification"
-        content="iZUMajwbuFsdeJXWRkOpByvvzZyFzfSP1vV1tN0xUFs" />
+        content="teachers, institutes, teaching jobs, school jobs, lets teach" />
 </head>
 
 <body>
 
 <h1>Lets Teach</h1>
-<p>Connecting Teachers & Institutes — Free & Secure</p>
+<p>Find Teachers & Institutes — No Login Required</p>
 
 <hr>
 
-<h3>Quick Links</h3>
-<ul>
-  <li><a href="login.html">Login / Register</a></li>
-  <li><a href="jobs.html">Browse Teaching Jobs</a></li>
-</ul>
+<h3>Filter</h3>
+
+<select id="city">
+  <option value="">Select City</option>
+  <option value="Delhi">Delhi</option>
+  <option value="Mumbai">Mumbai</option>
+  <option value="Patna">Patna</option>
+  <option value="Lucknow">Lucknow</option>
+</select>
+
+<select id="subject">
+  <option value="">Select Subject</option>
+  <option value="Math">Math</option>
+  <option value="Science">Science</option>
+  <option value="English">English</option>
+  <option value="Hindi">Hindi</option>
+</select>
+
+<button onclick="applyFilter()">Apply Filter</button>
 
 <hr>
 
-<h2>Find Teachers (Public)</h2>
-<p>Browse verified teachers by subject and city.</p>
+<h2>Teachers</h2>
 <ul id="teachers"></ul>
 
 <hr>
 
-<h2>Find Institutes (Public)</h2>
-<p>Explore institutes looking for teachers.</p>
+<h2>Institutes</h2>
 <ul id="institutes"></ul>
-
-<hr>
-
-<h2>Interview Preparation (Free)</h2>
-<p>Helpful resources for teachers preparing for school interviews.</p>
-<ul>
-  <li>
-    <a href="interview/index.html">
-      📘 Interview Questions & Demo Class Tips
-    </a>
-  </li>
-</ul>
-
-<hr>
-
-<h2>About Lets Teach</h2>
-<p>
-  Lets Teach is a free public platform where teachers and institutes
-  can discover each other, send invites, apply for jobs, and chat
-  securely after acceptance.
-</p>
 
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-/* ================= LOAD TEACHERS (PUBLIC) ================= */
-fetch(`${BASE_URL}/api/teacher/browse`)
-  .then(res => res.json())
-  .then(data => {
-    const ul = document.getElementById("teachers");
+/* ================= APPLY FILTER ================= */
+function applyFilter() {
+  const city = document.getElementById("city").value;
+  const subject = document.getElementById("subject").value;
 
-    if (!data.teachers || data.teachers.length === 0) {
-      ul.innerHTML = "<li>No teachers found</li>";
-      return;
-    }
+  loadTeachers(city, subject);
+  loadInstitutes(city);
+}
 
-    data.teachers.forEach(t => {
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <b>${t.name}</b> — ${t.subject} (${t.city})
-        <br>
-        <a href="teacher-public.html?uid=${t.uid}">View Profile</a>
-        |
-        <a href="login.html">Send Invite</a>
-        <hr>
-      `;
-      ul.appendChild(li);
+/* ================= LOAD TEACHERS ================= */
+function loadTeachers(city = "", subject = "") {
+  let url = `${BASE_URL}/api/teacher/browse`;
+
+  const params = [];
+  if (city) params.push(`city=${encodeURIComponent(city)}`);
+  if (subject) params.push(`subject=${encodeURIComponent(subject)}`);
+
+  if (params.length) {
+    url += "?" + params.join("&");
+  }
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      const ul = document.getElementById("teachers");
+      ul.innerHTML = "";
+
+      if (!data.teachers || data.teachers.length === 0) {
+        ul.innerHTML = "<li>No teachers found</li>";
+        return;
+      }
+
+      data.teachers.forEach(t => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <b>${t.name}</b> — ${t.subject} (${t.city})
+          <br>
+          <a href="teacher-public.html?uid=${t.uid}">View Profile</a>
+          |
+          <a href="login.html">Send Invite</a>
+          <hr>
+        `;
+        ul.appendChild(li);
+      });
     });
-  });
+}
 
-/* ================= LOAD INSTITUTES (PUBLIC) ================= */
-fetch(`${BASE_URL}/api/institute/browse`)
-  .then(res => res.json())
-  .then(data => {
-    const ul = document.getElementById("institutes");
+/* ================= LOAD INSTITUTES ================= */
+function loadInstitutes(city = "") {
+  let url = `${BASE_URL}/api/institute/browse`;
 
-    if (!data.institutes || data.institutes.length === 0) {
-      ul.innerHTML = "<li>No institutes found</li>";
-      return;
-    }
+  if (city) {
+    url += `?city=${encodeURIComponent(city)}`;
+  }
 
-    data.institutes.forEach(i => {
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <b>${i.name}</b> — ${i.city}
-        <br>
-        <a href="institute-public.html?uid=${i.uid}">View Profile</a>
-        |
-        <a href="login.html">Send Invite</a>
-        <hr>
-      `;
-      ul.appendChild(li);
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      const ul = document.getElementById("institutes");
+      ul.innerHTML = "";
+
+      if (!data.institutes || data.institutes.length === 0) {
+        ul.innerHTML = "<li>No institutes found</li>";
+        return;
+      }
+
+      data.institutes.forEach(i => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <b>${i.name}</b> — ${i.city}
+          <br>
+          <a href="institute-public.html?uid=${i.uid}">View Profile</a>
+          |
+          <a href="login.html">Send Invite</a>
+          <hr>
+        `;
+        ul.appendChild(li);
+      });
     });
-  });
+}
+
+/* ================= INITIAL LOAD ================= */
+loadTeachers();
+loadInstitutes();
 </script>
 
 </body>
