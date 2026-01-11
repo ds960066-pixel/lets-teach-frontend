@@ -1,37 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Lets Teach | Teaching Jobs & Interview Preparation</title>
+  <title>Lets Teach | Teaching Jobs, Teachers & Institutes</title>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- 🔍 SEO META (IMPORTANT FOR GOOGLE) -->
+  <!-- 🔍 SEO META -->
   <meta name="description"
-        content="Lets Teach is a free public platform connecting teachers and institutes. Browse teaching jobs, prepare for interviews, and connect securely." />
+        content="Lets Teach is a free public platform to find teachers, browse institutes, explore teaching jobs, and prepare for interviews." />
 
   <meta name="keywords"
-        content="teaching jobs, teacher interview preparation, school jobs, institute teacher hiring, lets teach" />
-<meta name="google-site-verification" content="iZUMajwbuFsdeJXWRkOpByvvzZyFzfSP1vV1tN0xUFs" />
-  
+        content="teaching jobs, teachers, institutes, school jobs, teacher interview preparation, lets teach" />
+
+  <meta name="google-site-verification"
+        content="iZUMajwbuFsdeJXWRkOpByvvzZyFzfSP1vV1tN0xUFs" />
 </head>
 
 <body>
 
 <h1>Lets Teach</h1>
-<p>Connecting Teachers & Institutes</p>
+<p>Connecting Teachers & Institutes — Free & Secure</p>
 
 <hr>
 
-<h3>Get Started</h3>
+<h3>Quick Links</h3>
 <ul>
-  <li><a href="login.html">Login</a></li>
+  <li><a href="login.html">Login / Register</a></li>
   <li><a href="jobs.html">Browse Teaching Jobs</a></li>
 </ul>
 
 <hr>
 
-<h3>Interview Preparation (Free)</h3>
+<h2>Find Teachers (Public)</h2>
+<p>Browse verified teachers by subject and city.</p>
+<ul id="teachers"></ul>
+
+<hr>
+
+<h2>Find Institutes (Public)</h2>
+<p>Explore institutes looking for teachers.</p>
+<ul id="institutes"></ul>
+
+<hr>
+
+<h2>Interview Preparation (Free)</h2>
 <p>Helpful resources for teachers preparing for school interviews.</p>
 <ul>
   <li>
@@ -43,11 +56,66 @@
 
 <hr>
 
-<h3>About</h3>
+<h2>About Lets Teach</h2>
 <p>
   Lets Teach is a free public platform where teachers and institutes
-  can connect, send invites, apply for jobs, and chat securely after acceptance.
+  can discover each other, send invites, apply for jobs, and chat
+  securely after acceptance.
 </p>
+
+<script>
+const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+
+/* ================= LOAD TEACHERS (PUBLIC) ================= */
+fetch(`${BASE_URL}/api/teacher/browse`)
+  .then(res => res.json())
+  .then(data => {
+    const ul = document.getElementById("teachers");
+
+    if (!data.teachers || data.teachers.length === 0) {
+      ul.innerHTML = "<li>No teachers found</li>";
+      return;
+    }
+
+    data.teachers.forEach(t => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <b>${t.name}</b> — ${t.subject} (${t.city})
+        <br>
+        <a href="teacher-public.html?uid=${t.uid}">View Profile</a>
+        |
+        <a href="login.html">Send Invite</a>
+        <hr>
+      `;
+      ul.appendChild(li);
+    });
+  });
+
+/* ================= LOAD INSTITUTES (PUBLIC) ================= */
+fetch(`${BASE_URL}/api/institute/browse`)
+  .then(res => res.json())
+  .then(data => {
+    const ul = document.getElementById("institutes");
+
+    if (!data.institutes || data.institutes.length === 0) {
+      ul.innerHTML = "<li>No institutes found</li>";
+      return;
+    }
+
+    data.institutes.forEach(i => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <b>${i.name}</b> — ${i.city}
+        <br>
+        <a href="institute-public.html?uid=${i.uid}">View Profile</a>
+        |
+        <a href="login.html">Send Invite</a>
+        <hr>
+      `;
+      ul.appendChild(li);
+    });
+  });
+</script>
 
 </body>
 </html>
