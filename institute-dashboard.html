@@ -3,7 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <title>Institute Dashboard | Lets Teach</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 15px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+    }
+
+    button {
+      padding: 6px 12px;
+      background: #2e86de;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .resume {
+      background: #f8f9fa;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+    }
+  </style>
 </head>
+
 <body>
 
 <script>
@@ -22,7 +54,14 @@ if (!localStorage.uid || localStorage.role !== "institute") {
 <h3>Browse Teachers</h3>
 <button onclick="browseTeachers()">Load Teachers</button>
 
-<ul id="list"></ul>
+<div id="teachers"></div>
+
+<hr>
+
+<h3>Job Applications</h3>
+<button onclick="loadApplications()">View Applications</button>
+
+<div id="applications"></div>
 
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
@@ -40,41 +79,38 @@ async function browseTeachers() {
     const res = await fetch(`${BASE_URL}/api/teacher/browse`);
     const data = await res.json();
 
-    const list = document.getElementById("list");
-    list.innerHTML = "";
+    const box = document.getElementById("teachers");
+    box.innerHTML = "";
 
     if (!data.teachers || data.teachers.length === 0) {
-      list.innerHTML = "<li>No teachers found</li>";
+      box.innerHTML = "<p>No teachers found</p>";
       return;
     }
 
     data.teachers.forEach(t => {
-      const li = document.createElement("li");
+      const div = document.createElement("div");
+      div.className = "card";
 
-      li.innerHTML = `
+      div.innerHTML = `
         <b>${t.name}</b> – ${t.subject} (${t.city || ""})<br>
-        <a href="teacher.html?uid=${t.uid}">
-          View Profile
+        <a href="teacher-resume-view.html?uid=${t.uid}" target="_blank">
+          View Resume
         </a>
         <br><br>
-        <button id="btn-${t.uid}" onclick="sendInvite('${t.uid}')">
+        <button onclick="sendInvite('${t.uid}')">
           Send Invite
         </button>
-        <hr>
       `;
 
-      list.appendChild(li);
+      box.appendChild(div);
     });
-  } catch (err) {
+  } catch {
     alert("Failed to load teachers");
   }
 }
 
 /* ================= SEND INVITE ================= */
 async function sendInvite(teacherUid) {
-  const btn = document.getElementById(`btn-${teacherUid}`);
-  if (btn) btn.disabled = true;
-
   try {
     const res = await fetch(`${BASE_URL}/api/invite/create`, {
       method: "POST",
@@ -89,10 +125,66 @@ async function sendInvite(teacherUid) {
 
     const data = await res.json();
     alert(data.message || "Invite sent");
-  } catch (err) {
+  } catch {
     alert("Invite failed");
-    if (btn) btn.disabled = false;
   }
+}
+
+/* ================= LOAD JOB APPLICATIONS ================= */
+async function loadApplications() {
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/job/applications/institute/${uid}`
+    );
+    const data = await res.json();
+
+    const box = document.getElementById("applications");
+    box.innerHTML = "";
+
+    if (!data.applications || data.applications.length === 0) {
+      box.innerHTML = "<p>No applications yet</p>";
+      return;
+    }
+
+    data.applications.forEach(app => {
+      const div = document.createElement("div");
+      div.className = "card";
+
+      const resume = app.resumeSnapshot || {};
+
+      div.innerHTML = `
+        <b>Teacher UID:</b> ${app.teacherUid}<br>
+        <b>Status:</b> ${app.status}<br>
+
+        <div class="resume">
+          <b>Education:</b> ${resume.education || "—"}<br>
+          <b>Skills:</b> ${(resume.skills || []).join(", ") || "—"}<br>
+          <b>About:</b> ${resume.about || "—"}
+        </div>
+
+        ${
+          app.status === "pending"
+            ? `<br><button onclick="shortlist('${app._id}')">
+                Shortlist
+              </button>`
+            : ""
+        }
+      `;
+
+      box.appendChild(div);
+    });
+  } catch {
+    alert("Failed to load applications");
+  }
+}
+
+/* ================= SHORTLIST ================= */
+async function shortlist(id) {
+  await fetch(`${BASE_URL}/api/job/application/shortlist/${id}`, {
+    method: "POST"
+  });
+  alert("Applicant shortlisted");
+  loadApplications();
 }
 </script>
 
