@@ -7,7 +7,7 @@
 <body>
 
 <script>
-/* ================= AUTH GUARD ================= */
+/* ===== AUTH GUARD ===== */
 if (!localStorage.uid || localStorage.role !== "teacher") {
   window.location.href = "login.html";
 }
@@ -19,20 +19,63 @@ if (!localStorage.uid || localStorage.role !== "teacher") {
 
 <hr>
 
-<h3>My Invites</h3>
+<h3>📄 My Resume</h3>
+<p id="resumeStatus">Checking resume status...</p>
+
+<button onclick="openResume()">Create / Update Resume</button>
+<button onclick="viewResume()">View Resume</button>
+
+<hr>
+
+<h3>📨 My Invites</h3>
 <ul id="inviteList"></ul>
 
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 const uid = localStorage.getItem("uid");
 
-/* ================= LOGOUT ================= */
+/* ===== LOGOUT ===== */
 function logout() {
   localStorage.clear();
   window.location.href = "login.html";
 }
 
-/* ================= LOAD INVITES ================= */
+/* ===== CHECK RESUME STATUS ===== */
+async function loadResumeStatus() {
+  try {
+    const res = await fetch(`${BASE_URL}/api/teacher/${uid}`);
+    const data = await res.json();
+
+    if (!data.success) return;
+
+    const t = data.teacher;
+
+    const complete =
+      t.about &&
+      t.education &&
+      t.skills &&
+      t.skills.length > 0;
+
+    document.getElementById("resumeStatus").innerHTML =
+      complete
+        ? "✅ Resume Completed"
+        : "❌ Resume Incomplete (required for job apply)";
+  } catch {
+    document.getElementById("resumeStatus").innerText =
+      "Error loading resume status";
+  }
+}
+
+/* ===== RESUME BUTTONS ===== */
+function openResume() {
+  window.location.href = "teacher-resume-edit.html";
+}
+
+function viewResume() {
+  window.location.href = "teacher-resume-view.html";
+}
+
+/* ===== LOAD INVITES ===== */
 async function loadInvites() {
   try {
     const res = await fetch(`${BASE_URL}/api/invite/teacher/${uid}`);
@@ -49,58 +92,39 @@ async function loadInvites() {
     data.invites.forEach(inv => {
       const li = document.createElement("li");
 
-      let actions = "";
-
+      let action = "";
       if (inv.status === "pending") {
-        actions = `
-          <button onclick="acceptInvite('${inv._id}')">Accept</button>
-          <button onclick="rejectInvite('${inv._id}')">Reject</button>
-        `;
+        action = `<button onclick="acceptInvite('${inv._id}')">Accept</button>`;
       }
-
       if (inv.status === "accepted") {
-        actions = `
-          <button onclick="openChat('${inv.fromUid}')">Open Chat</button>
-        `;
+        action = `<button onclick="openChat('${inv.fromUid}')">Chat</button>`;
       }
 
       li.innerHTML = `
-        <b>From Institute:</b> ${inv.fromUid}<br>
-        <b>Status:</b> ${inv.status.toUpperCase()}<br>
-        ${actions}
+        <b>From:</b> ${inv.fromUid}<br>
+        <b>Status:</b> ${inv.status}<br>
+        ${action}
         <hr>
       `;
 
       list.appendChild(li);
     });
-  } catch (err) {
+  } catch {
     alert("Failed to load invites");
   }
 }
 
-/* ================= ACCEPT INVITE ================= */
 async function acceptInvite(id) {
-  await fetch(`${BASE_URL}/api/invite/accept/${id}`, {
-    method: "POST"
-  });
+  await fetch(`${BASE_URL}/api/invite/accept/${id}`, { method: "POST" });
   loadInvites();
 }
 
-/* ================= REJECT INVITE ================= */
-async function rejectInvite(id) {
-  await fetch(`${BASE_URL}/api/invite/reject/${id}`, {
-    method: "POST"
-  });
-  loadInvites();
+function openChat(otherUid) {
+  window.location.href = `chat.html?senderUid=${uid}&receiverUid=${otherUid}`;
 }
 
-/* ================= OPEN CHAT ================= */
-function openChat(instituteUid) {
-  window.location.href =
-    `chat.html?senderUid=${uid}&receiverUid=${instituteUid}`;
-}
-
-/* ================= INIT ================= */
+/* ===== INIT ===== */
+loadResumeStatus();
 loadInvites();
 </script>
 
