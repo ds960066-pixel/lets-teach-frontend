@@ -64,7 +64,7 @@ const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
 /* 🔐 AUTH STATE (FINAL STANDARD) */
 const uid = localStorage.getItem("uid");
-const userType = localStorage.getItem("userType");
+const userType = localStorage.getItem("role"); // ✅ FIXED
 
 /* SHOW HINT IF NOT LOGGED-IN TEACHER */
 if (!uid || userType !== "teacher") {
