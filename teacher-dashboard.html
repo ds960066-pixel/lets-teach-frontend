@@ -18,6 +18,39 @@ if (!localStorage.uid || localStorage.role !== "teacher") {
 <button onclick="logout()">Logout</button>
 
 <hr>
+<h3>Resume</h3>
+
+<input type="file" id="resume" accept="application/pdf" />
+<button onclick="uploadResume()">Upload Resume (PDF)</button>
+
+<p id="resumeStatus"></p>
+
+<script>
+async function uploadResume() {
+  const file = document.getElementById("resume").files[0];
+  if (!file) {
+    alert("Select PDF file");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("resume", file);
+
+  const uid = localStorage.getItem("uid");
+
+  const res = await fetch(
+    `${BASE_URL}/api/teacher/upload-resume/${uid}`,
+    {
+      method: "POST",
+      body: formData
+    }
+  );
+
+  const data = await res.json();
+  document.getElementById("resumeStatus").innerText =
+    data.message || "Uploaded";
+}
+</script>
 
 <h3>📄 My Resume</h3>
 <p id="resumeStatus">Checking resume status...</p>
