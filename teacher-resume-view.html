@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Teacher Portfolio | Lets Teach</title>
+  <title>Teacher Resume | Lets Teach</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -28,10 +29,6 @@
       margin-top: 25px;
     }
 
-    p {
-      line-height: 1.6;
-    }
-
     .tag {
       display: inline-block;
       background: #d6eaf8;
@@ -55,79 +52,69 @@
 
 <div class="resume">
 
-  <h1 id="name">Teacher Name</h1>
+  <h1 id="name">Loading...</h1>
   <p><b>📞 Phone:</b> <span id="phone"></span></p>
   <p><b>📍 City:</b> <span id="city"></span></p>
 
   <h3>Professional Summary</h3>
-  <p>
-    Dedicated and passionate teacher with
-    <span id="experience"></span> years of experience
-    in delivering quality education and helping students achieve academic success.
-  </p>
+  <p id="about">—</p>
 
-  <h3>Subject Expertise</h3>
-  <div class="tag" id="subject"></div>
+  <h3>Education</h3>
+  <p id="education">—</p>
 
-  <h3>Why Choose Me?</h3>
-  <ul>
-    <li>Student-focused teaching approach</li>
-    <li>Clear concept explanation</li>
-    <li>Regular assessments & doubt sessions</li>
-    <li>Online & offline teaching support</li>
-  </ul>
+  <h3>Skills</h3>
+  <div id="skills"></div>
 
   <button onclick="window.print()">Download Resume (PDF)</button>
 
 </div>
 
 <script>
-  function getQueryParam(param) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-  }
+const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-  const username = getQueryParam("u");
+/* ================= GET UID ================= */
+const params = new URLSearchParams(window.location.search);
+const uid = params.get("uid") || localStorage.getItem("uid");
 
-  // 1️⃣ Try public link data (future backend)
-  if (username) {
-    // TEMP: demo public data
-    const publicProfiles = {
-      rahul: {
-        name: "Rahul Sharma",
-        phone: "9876543210",
-        city: "Delhi",
-        subject: "Mathematics",
-        experience: "5"
-      }
-    };
+if (!uid) {
+  alert("Teacher UID missing");
+  window.location.href = "login.html";
+}
 
-    const data = publicProfiles[username];
-
-    if (!data) {
-      alert("Public profile not found");
-    } else {
-      loadProfile(data);
+/* ================= LOAD RESUME ================= */
+fetch(`${BASE_URL}/api/teacher/${uid}`)
+  .then(res => res.json())
+  .then(data => {
+    if (!data.success) {
+      alert("Teacher not found");
+      return;
     }
 
-  } else {
-    // 2️⃣ Fallback to localStorage (registered user)
-    const localData = JSON.parse(localStorage.getItem("teacherProfile"));
-    if (!localData) {
-      alert("No profile data found");
-      window.location.href = "teacher.html";
-    } else {
-      loadProfile(localData);
-    }
-  }
+    const t = data.teacher;
 
-  function loadProfile(data) {
-    document.getElementById("name").innerText = data.name;
-    document.getElementById("phone").innerText = data.phone;
-    document.getElementById("city").innerText = data.city;
-    document.getElementById("subject").innerText = data.subject;
-    document.getElementById("experience").innerText = data.experience;
-  }
+    document.getElementById("name").innerText = t.name;
+    document.getElementById("phone").innerText = t.phone || "—";
+    document.getElementById("city").innerText = t.city || "—";
+    document.getElementById("about").innerText =
+      t.about || "No summary added yet";
+    document.getElementById("education").innerText =
+      t.education || "—";
+
+    const skillsBox = document.getElementById("skills");
+    skillsBox.innerHTML = "";
+
+    if (t.skills && t.skills.length) {
+      t.skills.forEach(s => {
+        const span = document.createElement("span");
+        span.className = "tag";
+        span.innerText = s;
+        skillsBox.appendChild(span);
+      });
+    } else {
+      skillsBox.innerText = "—";
+    }
+  })
+  .catch(() => alert("Server error"));
 </script>
 
 </body>
