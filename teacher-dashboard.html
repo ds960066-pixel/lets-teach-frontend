@@ -18,40 +18,16 @@ if (!localStorage.uid || localStorage.role !== "teacher") {
 <button onclick="logout()">Logout</button>
 
 <hr>
-<h3>Resume</h3>
 
-<input type="file" id="resume" accept="application/pdf" />
-<button onclick="uploadResume()">Upload Resume (PDF)</button>
+<!-- ✅ PDF UPLOAD -->
+<h3>📎 Upload Resume (PDF)</h3>
+<input type="file" id="resumeFile" accept="application/pdf" />
+<button onclick="uploadResume()">Upload Resume</button>
+<p id="uploadStatus"></p>
 
-<p id="resumeStatus"></p>
+<hr>
 
-<script>
-async function uploadResume() {
-  const file = document.getElementById("resume").files[0];
-  if (!file) {
-    alert("Select PDF file");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("resume", file);
-
-  const uid = localStorage.getItem("uid");
-
-  const res = await fetch(
-    `${BASE_URL}/api/teacher/upload-resume/${uid}`,
-    {
-      method: "POST",
-      body: formData
-    }
-  );
-
-  const data = await res.json();
-  document.getElementById("resumeStatus").innerText =
-    data.message || "Uploaded";
-}
-</script>
-
+<!-- ✅ RESUME STATUS + ACTIONS -->
 <h3>📄 My Resume</h3>
 <p id="resumeStatus">Checking resume status...</p>
 
@@ -73,13 +49,46 @@ function logout() {
   window.location.href = "login.html";
 }
 
-/* ===== CHECK RESUME STATUS ===== */
+/* ===== PDF UPLOAD ===== */
+async function uploadResume() {
+  const file = document.getElementById("resumeFile").files[0];
+  if (!file) {
+    alert("Select PDF file");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("resume", file);
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/teacher/upload-resume/${uid}`, {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+    document.getElementById("uploadStatus").innerText =
+      data.message || "Uploaded";
+
+    // re-check status after upload
+    loadResumeStatus();
+  } catch (err) {
+    document.getElementById("uploadStatus").innerText =
+      "Upload failed. Server error.";
+  }
+}
+
+/* ===== CHECK RESUME STATUS (for job apply) ===== */
 async function loadResumeStatus() {
   try {
     const res = await fetch(`${BASE_URL}/api/teacher/${uid}`);
     const data = await res.json();
 
-    if (!data.success) return;
+    if (!data.success) {
+      document.getElementById("resumeStatus").innerText =
+        "Error loading resume status";
+      return;
+    }
 
     const t = data.teacher;
 
@@ -87,12 +96,13 @@ async function loadResumeStatus() {
       t.about &&
       t.education &&
       t.skills &&
-      t.skills.length > 0;
+      t.skills.length > 0 &&
+      t.resumeUrl; // ✅ PDF mandatory too
 
     document.getElementById("resumeStatus").innerHTML =
       complete
-        ? "✅ Resume Completed"
-        : "❌ Resume Incomplete (required for job apply)";
+        ? "✅ Resume Completed (PDF uploaded)"
+        : "❌ Resume Incomplete (Fill resume + upload PDF to apply jobs)";
   } catch {
     document.getElementById("resumeStatus").innerText =
       "Error loading resume status";
