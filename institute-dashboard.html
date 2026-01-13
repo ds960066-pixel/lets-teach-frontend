@@ -33,6 +33,8 @@
       margin-top: 10px;
       border-radius: 4px;
     }
+
+    a { color: #2e86de; }
   </style>
 </head>
 
@@ -73,6 +75,16 @@ function logout() {
   window.location.href = "login.html";
 }
 
+/* ================= HELPER: BUILD RESUME LINK ================= */
+function buildResumeLink(resumeUrl) {
+  if (!resumeUrl) return null;
+
+  // resumeUrl may be "/uploads/abc.pdf" or "uploads/abc.pdf"
+  if (resumeUrl.startsWith("http")) return resumeUrl;
+  if (resumeUrl.startsWith("/")) return `${BASE_URL}${resumeUrl}`;
+  return `${BASE_URL}/${resumeUrl}`;
+}
+
 /* ================= BROWSE TEACHERS ================= */
 async function browseTeachers() {
   try {
@@ -91,10 +103,12 @@ async function browseTeachers() {
       const div = document.createElement("div");
       div.className = "card";
 
+      // NOTE: browse API may not return resumeUrl.
+      // So we keep a "View Profile" link and resume view page can fetch by uid.
       div.innerHTML = `
         <b>${t.name}</b> – ${t.subject} (${t.city || ""})<br>
         <a href="teacher-resume-view.html?uid=${t.uid}" target="_blank">
-          View Resume
+          View Resume Page
         </a>
         <br><br>
         <button onclick="sendInvite('${t.uid}')">
@@ -133,9 +147,7 @@ async function sendInvite(teacherUid) {
 /* ================= LOAD JOB APPLICATIONS ================= */
 async function loadApplications() {
   try {
-    const res = await fetch(
-      `${BASE_URL}/api/job/applications/institute/${uid}`
-    );
+    const res = await fetch(`${BASE_URL}/api/job/applications/institute/${uid}`);
     const data = await res.json();
 
     const box = document.getElementById("applications");
@@ -151,29 +163,44 @@ async function loadApplications() {
       div.className = "card";
 
       const resume = app.resumeSnapshot || {};
+      const t = app.teacher || null;
+
+      // ✅ Teacher resume PDF link (from teacher.resumeUrl)
+      const resumePdf = t ? buildResumeLink(t.resumeUrl) : null;
 
       div.innerHTML = `
-        <b>Teacher UID:</b> ${app.teacherUid}<br>
-        <b>Status:</b> ${app.status}<br>
+        <b>Teacher:</b> ${t ? (t.name + " (" + app.teacherUid + ")") : app.teacherUid}<br>
+        <b>Status:</b> ${app.status || "applied"}<br>
 
         <div class="resume">
           <b>Education:</b> ${resume.education || "—"}<br>
           <b>Skills:</b> ${(resume.skills || []).join(", ") || "—"}<br>
           <b>About:</b> ${resume.about || "—"}
+          <br><br>
+
+          ${
+            resumePdf
+              ? `
+                ✅ <b>Resume PDF:</b>
+                <a href="${resumePdf}" target="_blank">View</a>
+                |
+                <a href="${resumePdf}" download>Download</a>
+              `
+              : `❌ <b>Resume PDF:</b> Not uploaded`
+          }
         </div>
 
         ${
-          app.status === "pending"
-            ? `<br><button onclick="shortlist('${app._id}')">
-                Shortlist
-              </button>`
+          app.status === "pending" || app.status === "applied" || !app.status
+            ? `<br><button onclick="shortlist('${app._id}')">Shortlist</button>`
             : ""
         }
       `;
 
       box.appendChild(div);
     });
-  } catch {
+  } catch (e) {
+    console.error(e);
     alert("Failed to load applications");
   }
 }
