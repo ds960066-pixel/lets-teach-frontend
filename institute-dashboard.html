@@ -79,7 +79,6 @@ function logout() {
 function buildResumeLink(resumeUrl) {
   if (!resumeUrl) return null;
 
-  // resumeUrl may be "/uploads/abc.pdf" or "uploads/abc.pdf"
   if (resumeUrl.startsWith("http")) return resumeUrl;
   if (resumeUrl.startsWith("/")) return `${BASE_URL}${resumeUrl}`;
   return `${BASE_URL}/${resumeUrl}`;
@@ -103,8 +102,6 @@ async function browseTeachers() {
       const div = document.createElement("div");
       div.className = "card";
 
-      // NOTE: browse API may not return resumeUrl.
-      // So we keep a "View Profile" link and resume view page can fetch by uid.
       div.innerHTML = `
         <b>${t.name}</b> – ${t.subject} (${t.city || ""})<br>
         <a href="teacher-resume-view.html?uid=${t.uid}" target="_blank">
@@ -118,7 +115,8 @@ async function browseTeachers() {
 
       box.appendChild(div);
     });
-  } catch {
+  } catch (e) {
+    console.error(e);
     alert("Failed to load teachers");
   }
 }
@@ -139,7 +137,8 @@ async function sendInvite(teacherUid) {
 
     const data = await res.json();
     alert(data.message || "Invite sent");
-  } catch {
+  } catch (e) {
+    console.error(e);
     alert("Invite failed");
   }
 }
@@ -162,36 +161,40 @@ async function loadApplications() {
       const div = document.createElement("div");
       div.className = "card";
 
-      const resume = app.resumeSnapshot || {};
-      const t = app.teacher || null;
+      const snap = app.resumeSnapshot || {};
+      const t = app.teacher || {};
 
-      // ✅ Teacher resume PDF link (from teacher.resumeUrl)
-      const resumePdf = t ? buildResumeLink(t.resumeUrl) : null;
+      const resumePdf = t.resumeUrl ? buildResumeLink(t.resumeUrl) : null;
+
+      const education = snap.education || t.education || "—";
+      const skillsArr = (snap.skills && snap.skills.length) ? snap.skills : (t.skills || []);
+      const skills = skillsArr.length ? skillsArr.join(", ") : "—";
+      const about = snap.about || t.about || "—";
+
+      const status = app.status || "pending"; // safe default
 
       div.innerHTML = `
-        <b>Teacher:</b> ${t ? (t.name + " (" + app.teacherUid + ")") : app.teacherUid}<br>
-        <b>Status:</b> ${app.status || "applied"}<br>
+        <b>Teacher:</b> ${t.name ? `${t.name} (${app.teacherUid})` : app.teacherUid}<br>
+        <b>Status:</b> ${status}<br>
 
         <div class="resume">
-          <b>Education:</b> ${resume.education || "—"}<br>
-          <b>Skills:</b> ${(resume.skills || []).join(", ") || "—"}<br>
-          <b>About:</b> ${resume.about || "—"}
+          <b>Education:</b> ${education}<br>
+          <b>Skills:</b> ${skills}<br>
+          <b>About:</b> ${about}
           <br><br>
 
           ${
             resumePdf
-              ? `
-                ✅ <b>Resume PDF:</b>
-                <a href="${resumePdf}" target="_blank">View</a>
-                |
-                <a href="${resumePdf}" download>Download</a>
-              `
+              ? `✅ <b>Resume PDF:</b>
+                 <a href="${resumePdf}" target="_blank">View</a>
+                 |
+                 <a href="${resumePdf}" download>Download</a>`
               : `❌ <b>Resume PDF:</b> Not uploaded`
           }
         </div>
 
         ${
-          app.status === "pending" || app.status === "applied" || !app.status
+          (status === "pending" || status === "applied")
             ? `<br><button onclick="shortlist('${app._id}')">Shortlist</button>`
             : ""
         }
