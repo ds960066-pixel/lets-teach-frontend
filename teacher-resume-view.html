@@ -38,13 +38,25 @@
     }
 
     button {
-      margin-top: 20px;
+      margin-top: 10px;
       padding: 10px 15px;
       background: #27ae60;
       color: white;
       border: none;
       cursor: pointer;
+      border-radius: 4px;
     }
+
+    .btn-blue {
+      background: #2e86de;
+    }
+
+    .muted {
+      color: #666;
+      font-size: 14px;
+    }
+
+    a { color: #2e86de; }
   </style>
 </head>
 
@@ -53,8 +65,10 @@
 <div class="resume">
 
   <h1 id="name">Loading...</h1>
-  <p><b>📞 Phone:</b> <span id="phone"></span></p>
-  <p><b>📍 City:</b> <span id="city"></span></p>
+  <p><b>📞 Phone:</b> <span id="phone">—</span></p>
+  <p><b>📍 City:</b> <span id="city">—</span></p>
+
+  <div id="pdfBox" style="margin-top:10px;"></div>
 
   <h3>Professional Summary</h3>
   <p id="about">—</p>
@@ -63,9 +77,9 @@
   <p id="education">—</p>
 
   <h3>Skills</h3>
-  <div id="skills"></div>
+  <div id="skills">—</div>
 
-  <button onclick="window.print()">Download Resume (PDF)</button>
+  <button class="btn-blue" onclick="window.print()">Download (Print to PDF)</button>
 
 </div>
 
@@ -81,29 +95,40 @@ if (!uid) {
   window.location.href = "login.html";
 }
 
+/* ================= HELPERS ================= */
+function buildResumeLink(resumeUrl) {
+  if (!resumeUrl) return null;
+  if (resumeUrl.startsWith("http")) return resumeUrl;
+  if (resumeUrl.startsWith("/")) return `${BASE_URL}${resumeUrl}`;
+  return `${BASE_URL}/${resumeUrl}`;
+}
+
 /* ================= LOAD RESUME ================= */
 fetch(`${BASE_URL}/api/teacher/${uid}`)
   .then(res => res.json())
   .then(data => {
-    if (!data.success) {
+    if (!data.success || !data.teacher) {
       alert("Teacher not found");
       return;
     }
 
     const t = data.teacher;
 
-    document.getElementById("name").innerText = t.name;
+    document.getElementById("name").innerText = t.name || "Teacher";
     document.getElementById("phone").innerText = t.phone || "—";
     document.getElementById("city").innerText = t.city || "—";
-    document.getElementById("about").innerText =
-      t.about || "No summary added yet";
-    document.getElementById("education").innerText =
-      t.education || "—";
 
+    document.getElementById("about").innerText =
+      t.about ? t.about : "No summary added yet";
+
+    document.getElementById("education").innerText =
+      t.education ? t.education : "—";
+
+    // Skills tags
     const skillsBox = document.getElementById("skills");
     skillsBox.innerHTML = "";
 
-    if (t.skills && t.skills.length) {
+    if (Array.isArray(t.skills) && t.skills.length) {
       t.skills.forEach(s => {
         const span = document.createElement("span");
         span.className = "tag";
@@ -113,8 +138,26 @@ fetch(`${BASE_URL}/api/teacher/${uid}`)
     } else {
       skillsBox.innerText = "—";
     }
+
+    // Resume PDF buttons (if uploaded)
+    const pdfBox = document.getElementById("pdfBox");
+    const pdfLink = buildResumeLink(t.resumeUrl);
+
+    if (pdfLink) {
+      pdfBox.innerHTML = `
+        <p class="muted">✅ Resume PDF uploaded:</p>
+        <a href="${pdfLink}" target="_blank">View PDF</a>
+        &nbsp; | &nbsp;
+        <a href="${pdfLink}" download>Download PDF</a>
+      `;
+    } else {
+      pdfBox.innerHTML = `<p class="muted">❌ Resume PDF not uploaded</p>`;
+    }
   })
-  .catch(() => alert("Server error"));
+  .catch(err => {
+    console.error(err);
+    alert("Server error");
+  });
 </script>
 
 </body>
