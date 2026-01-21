@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ds960066-pixel.github.io/lets-teach-frontend/sitemap.xml
+Sitemap: https://ds960066-pixel.github.io/lets-teach-frontend/sitemap-v2.xml
+
