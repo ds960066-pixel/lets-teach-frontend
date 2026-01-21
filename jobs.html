@@ -1,151 +1,194 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <title>Teaching Jobs | Lets Teach</title>
+  <meta name="description" content="Browse teaching jobs by city and subject. Teachers can apply after login. Jobs are posted by schools and coaching institutes." />
 
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       padding: 20px;
       background: #f4f4f4;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    .muted {
+      color: #666;
+      margin: 0 0 14px;
+      line-height: 1.4;
     }
 
     .card {
       background: #fff;
       padding: 15px;
       margin-bottom: 12px;
-      border-radius: 5px;
+      border-radius: 6px;
+      border: 1px solid #eee;
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 12px 0;
+    }
+
+    input, select {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      outline: none;
+      min-width: 160px;
+      background: #fff;
     }
 
     button {
-      padding: 6px 12px;
+      padding: 10px 14px;
       background: #27ae60;
       color: #fff;
       border: none;
       cursor: pointer;
-      border-radius: 4px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
     }
 
     .login-hint {
       background: #fff3cd;
       padding: 10px;
-      margin-bottom: 15px;
-      border-radius: 4px;
+      margin: 12px 0;
+      border-radius: 6px;
       color: #856404;
+      border: 1px solid #ffeeba;
+    }
+
+    .danger {
+      background: #fdecea;
+      color: #611a15;
+      border: 1px solid #f5c6cb;
+    }
+
+    .row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      color: #333;
+    }
+
+    .row p {
+      margin: 6px 0;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    a.btn-link {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      background: #fff;
+      color: #111;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .small {
+      font-size: 13px;
     }
   </style>
 </head>
 
 <body>
+  <div class="container">
+    <!-- ✅ Static content (SEO + Soft-404 safe) -->
+    <h1>Teaching Jobs</h1>
+    <p class="muted">
+      Browse teaching jobs by <b>city</b> and <b>subject</b>. Jobs are posted by schools and coaching institutes.
+      Teachers can apply after login.
+    </p>
 
-<h2>Teaching Jobs</h2>
+    <!-- 🔔 PUBLIC MODE MESSAGE -->
+    <div id="loginHint" class="login-hint" style="display:none;">
+      Please login as a <b>Teacher</b> to apply for jobs.
+      <div class="top-actions">
+        <a class="btn-link" href="./login.html">Login</a>
+        <a class="btn-link" href="./index.html">Home</a>
+      </div>
+    </div>
 
-<!-- 🔔 PUBLIC MODE MESSAGE -->
-<div id="loginHint" class="login-hint" style="display:none;">
-  Please login as a Teacher to apply for jobs.
-</div>
+    <!-- ✅ Filters -->
+    <div class="card">
+      <div class="filters">
+        <input id="city" placeholder="City (e.g. Delhi)" />
+        <input id="subject" placeholder="Subject (e.g. Maths)" />
+        <select id="role">
+          <option value="">Any</option>
+          <option value="part-time">Part-time</option>
+          <option value="full-time">Full-time</option>
+        </select>
 
-<input id="city" placeholder="City">
-<input id="subject" placeholder="Subject">
-<select id="role">
-  <option value="">Any</option>
-  <option value="part-time">Part-time</option>
-  <option value="full-time">Full-time</option>
-</select>
+        <button id="searchBtn" onclick="loadJobs()">Search</button>
+      </div>
+      <p class="muted small" style="margin: 0;">
+        Tip: Leave filters blank and click Search to see all available jobs.
+      </p>
+    </div>
 
-<button onclick="loadJobs()">Search</button>
+    <div id="jobs"></div>
 
-<hr>
+    <!-- ✅ Extra static text (helps avoid thin-content Soft 404) -->
+    <div class="card">
+      <h2 style="margin:0 0 8px; font-size:18px;">How job applications work</h2>
+      <p class="muted" style="margin:0;">
+        Institutes post job openings. Teachers can apply after uploading their resume PDF.
+        If no jobs are available right now, please check back later.
+      </p>
+    </div>
 
-<div id="jobs"></div>
+    <noscript>
+      <div class="card danger">
+        Please enable JavaScript to view jobs.
+      </div>
+    </noscript>
+  </div>
 
 <script>
-const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+  const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 
-/* 🔐 AUTH STATE (FINAL STANDARD) */
-const uid = localStorage.getItem("uid");
-const userType = localStorage.getItem("role"); // ✅ FIXED
+  // 🔐 AUTH STATE
+  const uid = localStorage.getItem("uid");
+  const userType = localStorage.getItem("role"); // expected: "teacher"
 
-/* SHOW HINT IF NOT LOGGED-IN TEACHER */
-if (!uid || userType !== "teacher") {
-  document.getElementById("loginHint").style.display = "block";
-}
-
-/* LOAD JOBS (PUBLIC) */
-function loadJobs() {
-  const city = document.getElementById("city").value;
-  const subject = document.getElementById("subject").value;
-  const role = document.getElementById("role").value;
-
-  let url = `${BASE_URL}/api/job/browse?`;
-  if (city) url += `city=${encodeURIComponent(city)}&`;
-  if (subject) url += `subject=${encodeURIComponent(subject)}&`;
-  if (role) url += `role=${encodeURIComponent(role)}`;
-
-  fetch(url)
-    .then(res => res.json())
-    .then(data => {
-      const box = document.getElementById("jobs");
-      box.innerHTML = "";
-
-      if (!data.jobs || data.jobs.length === 0) {
-        box.innerHTML = "<p>No jobs found</p>";
-        return;
-      }
-
-      data.jobs.forEach(j => {
-        const div = document.createElement("div");
-        div.className = "card";
-
-        div.innerHTML = `
-          <h3>${j.title}</h3>
-          <p><b>Subject:</b> ${j.subject}</p>
-          <p><b>City:</b> ${j.city}</p>
-          <p><b>Role:</b> ${j.role || "Both"}</p>
-          <p><b>Salary:</b> ${j.salary || "Negotiable"}</p>
-
-          <button onclick="applyJob('${j._id}')">
-            Apply
-          </button>
-        `;
-
-        box.appendChild(div);
-      });
-    })
-    .catch(() => {
-      document.getElementById("jobs").innerHTML =
-        "<p>Error loading jobs</p>";
-    });
-}
-
-/* APPLY JOB (TEACHER ONLY) */
-function applyJob(jobId) {
+  // Show hint if not logged-in teacher
   if (!uid || userType !== "teacher") {
-    alert("Please login as Teacher to apply");
-    window.location.href = "login.html";
-    return;
+    document.getElementById("loginHint").style.display = "block";
   }
 
-  fetch(`${BASE_URL}/api/job/apply`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      jobId: jobId,
-      teacherUid: uid
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    alert(data.message || "Applied successfully");
-  })
-  .catch(() => {
-    alert("Server error. Please try again later.");
-  });
-}
-
-/* INITIAL LOAD */
-loadJobs();
-</script>
-
-</body>
-</html>
+  function buildBrowseUrl() {
+    const city = (document.getElementById("city").value || "").trim();
+    const subject = (document.getElementById("subject").value || "").trim();
+    const role = (document.getElementById("role").valu
