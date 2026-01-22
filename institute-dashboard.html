@@ -5,36 +5,18 @@
   <title>Institute Dashboard | Lets Teach</title>
 
   <style>
-    body {
-      font-family: Arial;
-      background: #f4f4f4;
-      padding: 20px;
-    }
-
-    .card {
-      background: #fff;
-      padding: 15px;
-      margin-bottom: 12px;
-      border-radius: 6px;
-    }
-
-    button {
-      padding: 6px 12px;
-      background: #2e86de;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-
-    .resume {
-      background: #f8f9fa;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 4px;
-    }
-
+    body { font-family: Arial; background: #f4f4f4; padding: 20px; margin: 0; }
+    .card { background: #fff; padding: 15px; margin-bottom: 12px; border-radius: 6px; }
+    button { padding: 6px 12px; background: #2e86de; color: #fff; border: none; cursor: pointer; border-radius: 4px; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .resume { background: #f8f9fa; padding: 10px; margin-top: 10px; border-radius: 4px; }
     a { color: #2e86de; }
+    input, select, textarea { width: 100%; max-width: 520px; padding: 8px; margin: 6px 0; border: 1px solid #ddd; border-radius: 4px; }
+    textarea { min-height: 80px; }
+    .warn { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 10px; border-radius: 6px; }
+    .ok { background: #eafaf1; color: #1e7e34; border: 1px solid #c3e6cb; padding: 10px; border-radius: 6px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .row > div { flex: 1; min-width: 200px; }
   </style>
 </head>
 
@@ -48,175 +30,50 @@ if (!localStorage.uid || localStorage.role !== "institute") {
 </script>
 
 <h2>Institute Dashboard</h2>
-
 <button onclick="logout()">Logout</button>
 
 <hr>
 
-<h3>Browse Teachers</h3>
-<button onclick="browseTeachers()">Load Teachers</button>
+<div class="card">
+  <h3>Phone Verification (OTP)</h3>
+  <div id="phoneStatusBox" class="warn" style="display:none;"></div>
 
-<div id="teachers"></div>
+  <!-- Simple verify button (backend TEMP verify-phone will mark verified) -->
+  <button id="verifyPhoneBtn" onclick="verifyPhoneNow()">Verify Phone (OTP)</button>
+</div>
 
-<hr>
+<div class="card">
+  <h3>Create Job</h3>
 
-<h3>Job Applications</h3>
-<button onclick="loadApplications()">View Applications</button>
+  <div id="jobGateMsg" class="warn" style="display:none;"></div>
 
-<div id="applications"></div>
+  <div class="row">
+    <div>
+      <label>Job Title *</label>
+      <input id="jobTitle" placeholder="e.g. Maths Teacher" />
+    </div>
+    <div>
+      <label>City *</label>
+      <input id="jobCity" placeholder="e.g. Delhi" />
+    </div>
+  </div>
 
-<script>
-const BASE_URL = "https://express-hello-world-uh96.onrender.com";
-const uid = localStorage.getItem("uid");
+  <div class="row">
+    <div>
+      <label>Subject *</label>
+      <input id="jobSubject" placeholder="e.g. Maths" />
+    </div>
+    <div>
+      <label>Role</label>
+      <select id="jobRole">
+        <option value="both">Both</option>
+        <option value="part-time">Part-time</option>
+        <option value="full-time">Full-time</option>
+      </select>
+    </div>
+  </div>
 
-/* ================= LOGOUT ================= */
-function logout() {
-  localStorage.clear();
-  window.location.href = "login.html";
-}
-
-/* ================= HELPER: BUILD RESUME LINK ================= */
-function buildResumeLink(resumeUrl) {
-  if (!resumeUrl) return null;
-
-  if (resumeUrl.startsWith("http")) return resumeUrl;
-  if (resumeUrl.startsWith("/")) return `${BASE_URL}${resumeUrl}`;
-  return `${BASE_URL}/${resumeUrl}`;
-}
-
-/* ================= BROWSE TEACHERS ================= */
-async function browseTeachers() {
-  try {
-    const res = await fetch(`${BASE_URL}/api/teacher/browse`);
-    const data = await res.json();
-
-    const box = document.getElementById("teachers");
-    box.innerHTML = "";
-
-    if (!data.teachers || data.teachers.length === 0) {
-      box.innerHTML = "<p>No teachers found</p>";
-      return;
-    }
-
-    data.teachers.forEach(t => {
-      const div = document.createElement("div");
-      div.className = "card";
-
-      div.innerHTML = `
-        <b>${t.name}</b> – ${t.subject} (${t.city || ""})<br>
-        <a href="teacher-resume-view.html?uid=${t.uid}" target="_blank">
-          View Resume Page
-        </a>
-        <br><br>
-        <button onclick="sendInvite('${t.uid}')">
-          Send Invite
-        </button>
-      `;
-
-      box.appendChild(div);
-    });
-  } catch (e) {
-    console.error(e);
-    alert("Failed to load teachers");
-  }
-}
-
-/* ================= SEND INVITE ================= */
-async function sendInvite(teacherUid) {
-  try {
-    const res = await fetch(`${BASE_URL}/api/invite/create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fromType: "institute",
-        fromUid: uid,
-        toType: "teacher",
-        toUid: teacherUid
-      })
-    });
-
-    const data = await res.json();
-    alert(data.message || "Invite sent");
-  } catch (e) {
-    console.error(e);
-    alert("Invite failed");
-  }
-}
-
-/* ================= LOAD JOB APPLICATIONS ================= */
-async function loadApplications() {
-  try {
-    const res = await fetch(`${BASE_URL}/api/job/applications/institute/${uid}`);
-    const data = await res.json();
-
-    const box = document.getElementById("applications");
-    box.innerHTML = "";
-
-    if (!data.applications || data.applications.length === 0) {
-      box.innerHTML = "<p>No applications yet</p>";
-      return;
-    }
-
-    data.applications.forEach(app => {
-      const div = document.createElement("div");
-      div.className = "card";
-
-      const snap = app.resumeSnapshot || {};
-      const t = app.teacher || {};
-
-      const resumePdf = t.resumeUrl ? buildResumeLink(t.resumeUrl) : null;
-
-      const education = snap.education || t.education || "—";
-      const skillsArr = (snap.skills && snap.skills.length) ? snap.skills : (t.skills || []);
-      const skills = skillsArr.length ? skillsArr.join(", ") : "—";
-      const about = snap.about || t.about || "—";
-
-      const status = app.status || "pending"; // safe default
-
-      div.innerHTML = `
-        <b>Teacher:</b> ${t.name ? `${t.name} (${app.teacherUid})` : app.teacherUid}<br>
-        <b>Status:</b> ${status}<br>
-
-        <div class="resume">
-          <b>Education:</b> ${education}<br>
-          <b>Skills:</b> ${skills}<br>
-          <b>About:</b> ${about}
-          <br><br>
-
-          ${
-            resumePdf
-              ? `✅ <b>Resume PDF:</b>
-                 <a href="${resumePdf}" target="_blank">View</a>
-                 |
-                 <a href="${resumePdf}" download>Download</a>`
-              : `❌ <b>Resume PDF:</b> Not uploaded`
-          }
-        </div>
-
-        ${
-          (status === "pending" || status === "applied")
-            ? `<br><button onclick="shortlist('${app._id}')">Shortlist</button>`
-            : ""
-        }
-      `;
-
-      box.appendChild(div);
-    });
-  } catch (e) {
-    console.error(e);
-    alert("Failed to load applications");
-  }
-}
-
-/* ================= SHORTLIST ================= */
-async function shortlist(id) {
-  await fetch(`${BASE_URL}/api/job/application/shortlist/${id}`, {
-    method: "POST"
-  });
-  alert("Applicant shortlisted");
-  loadApplications();
-}
-</script>
-
-</body>
-</html>
+  <div class="row">
+    <div>
+      <label>Salary</label>
+      <input id="jobSalary" placeholder="e.g. Negotiab
