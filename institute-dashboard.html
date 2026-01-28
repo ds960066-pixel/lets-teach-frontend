@@ -5,16 +5,84 @@
   <title>Institute Dashboard | Lets Teach</title>
 
   <style>
-    body { font-family: Arial; background: #f4f4f4; padding: 20px; margin: 0; }
-    .card { background: #fff; padding: 15px; margin-bottom: 12px; border-radius: 6px; }
-    button { padding: 6px 12px; background: #2e86de; color: #fff; border: none; cursor: pointer; border-radius: 4px; }
-    button:disabled { opacity: 0.6; cursor: not-allowed; }
-    input, select, textarea { width: 100%; max-width: 520px; padding: 8px; margin: 6px 0; border: 1px solid #ddd; border-radius: 4px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+      margin: 0;
+    }
+
+    h2 { margin-top: 0; }
+
+    .card {
+      background: #fff;
+      padding: 16px;
+      margin-bottom: 16px;
+      border-radius: 6px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      max-width: 520px;
+      padding: 8px;
+      margin: 6px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
     textarea { min-height: 80px; }
-    .warn { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 10px; border-radius: 6px; }
-    .ok { background: #eafaf1; color: #1e7e34; border: 1px solid #c3e6cb; padding: 10px; border-radius: 6px; }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; }
-    .row > div { flex: 1; min-width: 200px; }
+
+    button {
+      padding: 8px 14px;
+      background: #2e86de;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .ok {
+      background: #eafaf1;
+      color: #1e7e34;
+      border: 1px solid #c3e6cb;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+
+    .error {
+      background: #fdecea;
+      color: #a94442;
+      border: 1px solid #f5c6cb;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+
+    .success {
+      background: #eafaf1;
+      color: #1e7e34;
+      border: 1px solid #c3e6cb;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .row > div {
+      flex: 1;
+      min-width: 200px;
+    }
   </style>
 </head>
 
@@ -29,13 +97,12 @@ if (!localStorage.uid || localStorage.role !== "institute") {
 
 <h2>Institute Dashboard</h2>
 <button onclick="logout()">Logout</button>
+
 <hr>
 
-<!-- ================= STATUS ================= -->
-<div class="card">
-  <div id="phoneStatusBox" class="ok">
-    ✅ Phone verification temporarily disabled. You can post jobs.
-  </div>
+<!-- ✅ STATUS INFO -->
+<div class="ok">
+  ✅ Phone verification temporarily disabled. You can post jobs.
 </div>
 
 <!-- ================= CREATE JOB ================= -->
@@ -49,14 +116,14 @@ if (!localStorage.uid || localStorage.role !== "institute") {
     </div>
     <div>
       <label>City *</label>
-      <input id="jobCity" placeholder="e.g. Delhi" />
+      <input id="jobCity" placeholder="e.g. Meerut" />
     </div>
   </div>
 
   <div class="row">
     <div>
       <label>Subject *</label>
-      <input id="jobSubject" placeholder="e.g. Maths" />
+      <input id="jobSubject" placeholder="e.g. Maths, English" />
     </div>
     <div>
       <label>Role</label>
@@ -69,15 +136,27 @@ if (!localStorage.uid || localStorage.role !== "institute") {
   </div>
 
   <label>Salary</label>
-  <input id="jobSalary" placeholder="e.g. 15000-25000" />
+  <input id="jobSalary" placeholder="e.g. 30000 / Negotiable" />
 
   <label>Description</label>
-  <textarea id="jobDescription" placeholder="Timing, requirements..."></textarea>
+  <textarea id="jobDescription" placeholder="Experience, timing, requirements..."></textarea>
 
-  <button id="postJobBtn" onclick="postJob()">Post Job</button>
+  <button onclick="postJob()">Post Job</button>
 
-  <div id="jobResult" style="margin-top:10px;"></div>
+  <div id="jobResult"></div>
 </div>
+
+<hr>
+
+<h3>Browse Teachers</h3>
+<button onclick="browseTeachers()">Load Teachers</button>
+<div id="teachers"></div>
+
+<hr>
+
+<h3>Job Applications</h3>
+<button onclick="loadApplications()">View Applications</button>
+<div id="applications"></div>
 
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
@@ -91,21 +170,19 @@ function logout() {
 
 /* ================= POST JOB ================= */
 async function postJob() {
-  const title = document.getElementById("jobTitle").value.trim();
-  const city = document.getElementById("jobCity").value.trim();
-  const subject = document.getElementById("jobSubject").value.trim();
-  const role = document.getElementById("jobRole").value;
-  const salary = document.getElementById("jobSalary").value.trim();
-  const description = document.getElementById("jobDescription").value.trim();
+  const title = jobTitle.value.trim();
+  const city = jobCity.value.trim();
+  const subject = jobSubject.value.trim();
+  const role = jobRole.value;
+  const salary = jobSalary.value.trim();
+  const description = jobDescription.value.trim();
 
   if (!title || !city || !subject) {
-    alert("Title, City and Subject required");
+    alert("Please fill Job Title, City and Subject");
     return;
   }
 
-  const btn = document.getElementById("postJobBtn");
-  btn.disabled = true;
-  btn.innerText = "Posting...";
+  jobResult.innerHTML = "Posting...";
 
   try {
     const res = await fetch(`${BASE_URL}/api/job/create`, {
@@ -125,26 +202,69 @@ async function postJob() {
     const data = await res.json();
 
     if (!res.ok || !data.success) {
-      document.getElementById("jobResult").innerHTML =
-        `<div class="warn">${data.message || "Failed"}</div>`;
+      jobResult.innerHTML = `<div class="error">${data.message || "Job post failed"}</div>`;
       return;
     }
 
-    document.getElementById("jobResult").innerHTML =
-      `<div class="ok">✅ Job posted successfully</div>`;
-
-    document.getElementById("jobTitle").value = "";
-    document.getElementById("jobCity").value = "";
-    document.getElementById("jobSubject").value = "";
-    document.getElementById("jobSalary").value = "";
-    document.getElementById("jobDescription").value = "";
-
+    jobResult.innerHTML = `<div class="success">✅ Job posted successfully</div>`;
+    jobTitle.value = jobCity.value = jobSubject.value = jobSalary.value = jobDescription.value = "";
   } catch (e) {
-    document.getElementById("jobResult").innerHTML =
-      `<div class="warn">Server error</div>`;
-  } finally {
-    btn.disabled = false;
-    btn.innerText = "Post Job";
+    console.error(e);
+    jobResult.innerHTML = `<div class="error">Server error</div>`;
+  }
+}
+
+/* ================= BROWSE TEACHERS ================= */
+async function browseTeachers() {
+  const box = document.getElementById("teachers");
+  box.innerHTML = "Loading...";
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/teacher/browse`);
+    const data = await res.json();
+
+    box.innerHTML = "";
+
+    if (!data.teachers || !data.teachers.length) {
+      box.innerHTML = "<p>No teachers found</p>";
+      return;
+    }
+
+    data.teachers.forEach(t => {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `<b>${t.name}</b> – ${t.subject} (${t.city || ""})`;
+      box.appendChild(div);
+    });
+  } catch {
+    box.innerHTML = "<p>Error loading teachers</p>";
+  }
+}
+
+/* ================= LOAD APPLICATIONS ================= */
+async function loadApplications() {
+  const box = document.getElementById("applications");
+  box.innerHTML = "Loading...";
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/job/applications/institute/${uid}`);
+    const data = await res.json();
+
+    box.innerHTML = "";
+
+    if (!data.applications || !data.applications.length) {
+      box.innerHTML = "<p>No applications yet</p>";
+      return;
+    }
+
+    data.applications.forEach(app => {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `<b>Teacher UID:</b> ${app.teacherUid}<br><b>Status:</b> ${app.status}`;
+      box.appendChild(div);
+    });
+  } catch {
+    box.innerHTML = "<p>Error loading applications</p>";
   }
 }
 </script>
