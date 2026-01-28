@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OTP Test | Lets Teach</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+
+<h2>Institute OTP Test</h2>
+
+<input id="phone" placeholder="+91XXXXXXXXXX">
+<button onclick="sendOTP()">Send OTP</button>
+
+<br><br>
+
+<input id="otp" placeholder="Enter OTP">
+<button onclick="verifyOTP()">Verify OTP</button>
+
+<div id="msg"></div>
+
+<script>
+  // 🔥 Firebase Web Config (tumhara hi project)
+  const firebaseConfig = {
+    apiKey: "AIzaSyB4MyvDI2QZbWTXyJsbnSJ5CehCW_MoEK0",
+    authDomain: "lets-teach-37cb9.firebaseapp.com",
+    projectId: "lets-teach-37cb9"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  // Recaptcha
+  window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
+    document.body,
+    { size: "invisible" }
+  );
+
+  let confirmationResult = null;
+
+  async function sendOTP() {
+    const phone = document.getElementById("phone").value;
+
+    confirmationResult = await auth.signInWithPhoneNumber(
+      phone,
+      window.recaptchaVerifier
+    );
+
+    document.getElementById("msg").innerText = "OTP sent";
+  }
+
+  async function verifyOTP() {
+    const otp = document.getElementById("otp").value;
+
+    const result = await confirmationResult.confirm(otp);
+    const user = result.user;
+
+    // 🔑 Firebase ID TOKEN
+    const idToken = await user.getIdToken();
+
+    // 🔥 BACKEND CALL
+    const res = await fetch(
+      "https://express-hello-world-uh96.onrender.com/api/institute/verify-phone",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          uid: localStorage.getItem("uid"), // institute uid
+          idToken
+        })
+      }
+    );
+
+    const data = await res.json();
+    document.getElementById("msg").innerText = JSON.stringify(data);
+  }
+</script>
+
+</body>
+</html>
