@@ -9,8 +9,6 @@
     .card { background: #fff; padding: 15px; margin-bottom: 12px; border-radius: 6px; }
     button { padding: 6px 12px; background: #2e86de; color: #fff; border: none; cursor: pointer; border-radius: 4px; }
     button:disabled { opacity: 0.6; cursor: not-allowed; }
-    .resume { background: #f8f9fa; padding: 10px; margin-top: 10px; border-radius: 4px; }
-    a { color: #2e86de; }
     input, select, textarea { width: 100%; max-width: 520px; padding: 8px; margin: 6px 0; border: 1px solid #ddd; border-radius: 4px; }
     textarea { min-height: 80px; }
     .warn { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 10px; border-radius: 6px; }
@@ -23,7 +21,7 @@
 <body>
 
 <script>
-/* ================= AUTH + ROLE GUARD ================= */
+/* ================= AUTH GUARD ================= */
 if (!localStorage.uid || localStorage.role !== "institute") {
   window.location.href = "login.html";
 }
@@ -31,32 +29,18 @@ if (!localStorage.uid || localStorage.role !== "institute") {
 
 <h2>Institute Dashboard</h2>
 <button onclick="logout()">Logout</button>
-
 <hr>
 
-<!-- ================= PHONE OTP VERIFICATION ================= -->
+<!-- ================= STATUS ================= -->
 <div class="card">
-  <h3>Phone Verification (OTP)</h3>
-
-  <div id="phoneStatusBox" class="warn" style="display:none;"></div>
-
-  <input id="otpPhone" placeholder="+91XXXXXXXXXX" />
-
-  <div id="recaptcha-container" style="margin:10px 0;"></div>
-
-  <button id="sendOtpBtn" onclick="sendOtp()">Send OTP</button>
-
-  <div id="otpVerifyBox" style="display:none; margin-top:10px;">
-    <input id="otpCode" placeholder="Enter OTP" />
-    <button id="verifyOtpBtn" onclick="verifyOtp()">Verify OTP</button>
+  <div id="phoneStatusBox" class="ok">
+    ✅ Phone verification temporarily disabled. You can post jobs.
   </div>
 </div>
 
 <!-- ================= CREATE JOB ================= -->
 <div class="card">
   <h3>Create Job</h3>
-
-  <div id="jobGateMsg" class="warn" style="display:none;"></div>
 
   <div class="row">
     <div>
@@ -84,203 +68,25 @@ if (!localStorage.uid || localStorage.role !== "institute") {
     </div>
   </div>
 
-  <div class="row">
-    <div>
-      <label>Salary</label>
-      <input id="jobSalary" placeholder="e.g. Negotiable / 15k-25k" />
-    </div>
-  </div>
+  <label>Salary</label>
+  <input id="jobSalary" placeholder="e.g. 15000-25000" />
 
   <label>Description</label>
-  <textarea id="jobDescription" placeholder="Job details, timing, requirements..."></textarea>
+  <textarea id="jobDescription" placeholder="Timing, requirements..."></textarea>
 
   <button id="postJobBtn" onclick="postJob()">Post Job</button>
-  <span style="margin-left:10px;">
-    <a href="./jobs.html" target="_blank">Open Jobs Page</a>
-  </span>
 
   <div id="jobResult" style="margin-top:10px;"></div>
 </div>
-
-<hr>
-
-<h3>Browse Teachers</h3>
-<button onclick="browseTeachers()">Load Teachers</button>
-<div id="teachers"></div>
-
-<hr>
-
-<h3>Job Applications</h3>
-<button onclick="loadApplications()">View Applications</button>
-<div id="applications"></div>
-
-<!-- ✅ Firebase CDN (static HTML) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 
 <script>
 const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 const uid = localStorage.getItem("uid");
 
-let isPhoneVerified = false;
-
-/* ================= FIREBASE INIT (COMPAT) ================= */
-const firebaseConfig = {
-  apiKey: "AIzaSyB4MyvDI2QZbWTXyJsbnSJ5CehCW_MoEK0",
-  authDomain: "lets-teach-37cb9.firebaseapp.com",
-  projectId: "lets-teach-37cb9",
-  storageBucket: "lets-teach-37cb9.firebasestorage.app",
-  messagingSenderId: "357985375282",
-  appId: "1:357985375282:web:d54eff370c80651ffdd82b",
-  measurementId: "G-KMKRNWV71L"
-};
-
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-
-let confirmationResult = null;
-
 /* ================= LOGOUT ================= */
 function logout() {
   localStorage.clear();
   window.location.href = "login.html";
-}
-
-/* ================= HELPER: BUILD RESUME LINK ================= */
-function buildResumeLink(resumeUrl) {
-  if (!resumeUrl) return null;
-  if (resumeUrl.startsWith("http")) return resumeUrl;
-  if (resumeUrl.startsWith("/")) return `${BASE_URL}${resumeUrl}`;
-  return `${BASE_URL}/${resumeUrl}`;
-}
-
-/* ================= INIT: CHECK PHONE VERIFIED ================= */
-async function initInstituteStatus() {
-  try {
-    const res = await fetch(`${BASE_URL}/api/institute/login-check/${uid}`);
-    const data = await res.json();
-
-    if (data.status !== "OK") {
-      document.getElementById("phoneStatusBox").style.display = "block";
-      document.getElementById("phoneStatusBox").className = "warn";
-      document.getElementById("phoneStatusBox").innerText = `Status: ${data.status}`;
-      disableJobPosting("Your account is not ready to post jobs.");
-      return;
-    }
-
-    isPhoneVerified = !!data.phoneVerified;
-
-    if (isPhoneVerified) {
-      document.getElementById("phoneStatusBox").style.display = "block";
-      document.getElementById("phoneStatusBox").className = "ok";
-      document.getElementById("phoneStatusBox").innerText = "✅ Phone verified. You can post jobs.";
-      enableJobPosting();
-    } else {
-      document.getElementById("phoneStatusBox").style.display = "block";
-      document.getElementById("phoneStatusBox").className = "warn";
-      document.getElementById("phoneStatusBox").innerText =
-        "⚠️ Phone not verified. Please verify phone (OTP) to post jobs.";
-      disableJobPosting("Please verify phone (OTP) to post jobs.");
-    }
-  } catch (e) {
-    console.error(e);
-    disableJobPosting("Unable to check verification status. Try again later.");
-  }
-}
-
-function disableJobPosting(msg) {
-  document.getElementById("postJobBtn").disabled = true;
-  document.getElementById("jobGateMsg").style.display = "block";
-  document.getElementById("jobGateMsg").innerText = msg;
-}
-
-function enableJobPosting() {
-  document.getElementById("postJobBtn").disabled = false;
-  document.getElementById("jobGateMsg").style.display = "none";
-  document.getElementById("jobGateMsg").innerText = "";
-}
-
-/* ================= RECAPTCHA SETUP ================= */
-function setupRecaptcha() {
-  if (window.recaptchaVerifier) return;
-  window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", {
-    size: "normal"
-  });
-  window.recaptchaVerifier.render();
-}
-
-/* ================= SEND OTP ================= */
-async function sendOtp() {
-  const phone = document.getElementById("otpPhone").value.trim();
-
-  if (!phone.startsWith("+") || phone.length < 10) {
-    alert("Phone number must be in format: +91XXXXXXXXXX");
-    return;
-  }
-
-  setupRecaptcha();
-
-  document.getElementById("sendOtpBtn").disabled = true;
-  document.getElementById("sendOtpBtn").innerText = "Sending...";
-
-  try {
-    confirmationResult = await auth.signInWithPhoneNumber(phone, window.recaptchaVerifier);
-    alert("OTP sent ✅");
-    document.getElementById("otpVerifyBox").style.display = "block";
-  } catch (e) {
-    console.error(e);
-    alert("OTP send failed. Check Authorized domains in Firebase.");
-  } finally {
-    document.getElementById("sendOtpBtn").disabled = false;
-    document.getElementById("sendOtpBtn").innerText = "Send OTP";
-  }
-}
-
-/* ================= VERIFY OTP ================= */
-async function verifyOtp() {
-  const code = document.getElementById("otpCode").value.trim();
-
-  if (!confirmationResult) {
-    alert("Please send OTP first");
-    return;
-  }
-  if (!code) {
-    alert("Enter OTP");
-    return;
-  }
-
-  document.getElementById("verifyOtpBtn").disabled = true;
-  document.getElementById("verifyOtpBtn").innerText = "Verifying...";
-
-  try {
-    const result = await confirmationResult.confirm(code);
-    const idToken = await result.user.getIdToken();
-
-    const res = await fetch(`${BASE_URL}/api/institute/verify-phone`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ uid: uid, idToken })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || !data.success) {
-      alert(data.message || "Backend verify failed");
-      return;
-    }
-
-    alert("Phone verified ✅ अब आप job post कर सकते हैं");
-    await initInstituteStatus();
-
-    // Optional: logout from firebase auth after OTP
-    try { await auth.signOut(); } catch (_) {}
-  } catch (e) {
-    console.error(e);
-    alert("OTP verification failed");
-  } finally {
-    document.getElementById("verifyOtpBtn").disabled = false;
-    document.getElementById("verifyOtpBtn").innerText = "Verify OTP";
-  }
 }
 
 /* ================= POST JOB ================= */
@@ -293,7 +99,7 @@ async function postJob() {
   const description = document.getElementById("jobDescription").value.trim();
 
   if (!title || !city || !subject) {
-    alert("Please fill Title, City, Subject");
+    alert("Title, City and Subject required");
     return;
   }
 
@@ -320,4 +126,28 @@ async function postJob() {
 
     if (!res.ok || !data.success) {
       document.getElementById("jobResult").innerHTML =
-        `<div
+        `<div class="warn">${data.message || "Failed"}</div>`;
+      return;
+    }
+
+    document.getElementById("jobResult").innerHTML =
+      `<div class="ok">✅ Job posted successfully</div>`;
+
+    document.getElementById("jobTitle").value = "";
+    document.getElementById("jobCity").value = "";
+    document.getElementById("jobSubject").value = "";
+    document.getElementById("jobSalary").value = "";
+    document.getElementById("jobDescription").value = "";
+
+  } catch (e) {
+    document.getElementById("jobResult").innerHTML =
+      `<div class="warn">Server error</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "Post Job";
+  }
+}
+</script>
+
+</body>
+</html>
