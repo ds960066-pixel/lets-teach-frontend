@@ -4,8 +4,9 @@
   <meta charset="UTF-8" />
   <title>Edit Resume | Lets Teach</title>
 
-  <!-- Backend Base URL -->
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
+
   <style>
     body {
       font-family: Arial;
@@ -41,6 +42,7 @@
 <body>
 
 <script>
+/* ===== AUTH GUARD ===== */
 if (!localStorage.uid || localStorage.role !== "teacher") {
   window.location.href = "login.html";
 }
@@ -67,7 +69,7 @@ if (!localStorage.uid || localStorage.role !== "teacher") {
 </div>
 
 <script>
-const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
+/* ===== GLOBAL ===== */
 const uid = localStorage.getItem("uid");
 
 /* ===== LOAD EXISTING DATA ===== */
@@ -83,8 +85,8 @@ fetch(`${BASE_URL}/api/teacher/${uid}`)
       (t.skills || []).join(", ");
   });
 
-/* ===== SAVE RESUME ===== */
-function saveResume() {
+/* ===== SAVE RESUME (GLOBAL FOR onclick) ===== */
+window.saveResume = function () {
   const about = document.getElementById("about").value.trim();
   const education = document.getElementById("education").value.trim();
   const skills = document.getElementById("skills").value.trim();
@@ -104,18 +106,18 @@ function saveResume() {
       skills
     })
   })
-  .then(res => res.json())
-  .then(data => {
-    document.getElementById("msg").innerText =
-      data.success
-        ? "✅ Resume saved successfully"
-        : data.message;
-  })
-  .catch(() => {
-    document.getElementById("msg").innerText =
-      "Server error";
-  });
-}
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("msg").innerText =
+        data.success
+          ? "✅ Resume saved successfully"
+          : data.message;
+    })
+    .catch(() => {
+      document.getElementById("msg").innerText =
+        "Server error";
+    });
+};
 </script>
 
 </body>
