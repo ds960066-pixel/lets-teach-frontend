@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <title>Institute Profile | Lets Teach</title>
-   <!-- Backend Base URL -->
+
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
 
   <style>
@@ -29,9 +30,7 @@
     button:hover {
       background: #1b4f72;
     }
-    ul {
-      padding-left: 18px;
-    }
+    ul { padding-left: 18px; }
   </style>
 </head>
 
@@ -57,7 +56,7 @@
 </div>
 
 <script>
-const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
+/* ===== CONTEXT ===== */
 const params = new URLSearchParams(window.location.search);
 const instituteUid = params.get("uid");
 
@@ -66,7 +65,7 @@ if (!instituteUid) {
   window.location.href = "index.html";
 }
 
-/* ================= LOAD INSTITUTE PROFILE ================= */
+/* ===== LOAD INSTITUTE PROFILE ===== */
 fetch(`${BASE_URL}/api/institute/${instituteUid}`)
   .then(res => res.json())
   .then(data => {
@@ -86,25 +85,4 @@ fetch(`${BASE_URL}/api/institute/${instituteUid}`)
     const ul = document.getElementById("subjects");
     ul.innerHTML = "";
 
-    if (i.subjectsNeeded && i.subjectsNeeded.length > 0) {
-      i.subjectsNeeded.forEach(s => {
-        const li = document.createElement("li");
-        li.innerText = s;
-        ul.appendChild(li);
-      });
-    } else {
-      ul.innerHTML = "<li>No subjects listed</li>";
-    }
-  })
-  .catch(() => {
-    alert("Failed to load profile");
-    window.location.href = "index.html";
-  });
-
-function goLogin() {
-  window.location.href = "login.html";
-}
-</script>
-
-</body>
-</html>
+    if (i.subjectsNeeded && i.subjectsNeeded.length)
