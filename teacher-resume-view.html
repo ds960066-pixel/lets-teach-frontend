@@ -3,8 +3,9 @@
 <head>
   <title>Teacher Resume | Lets Teach</title>
 
-  <!-- Backend Base URL -->
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -81,13 +82,13 @@
   <h3>Skills</h3>
   <div id="skills">—</div>
 
-  <button class="btn-blue" onclick="window.print()">Download (Print to PDF)</button>
+  <button class="btn-blue" onclick="window.print()">
+    Download (Print to PDF)
+  </button>
 
 </div>
 
 <script>
-const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
-
 /* ================= GET UID ================= */
 const params = new URLSearchParams(window.location.search);
 const uid = params.get("uid") || localStorage.getItem("uid");
@@ -126,7 +127,7 @@ fetch(`${BASE_URL}/api/teacher/${uid}`)
     document.getElementById("education").innerText =
       t.education ? t.education : "—";
 
-    // Skills tags
+    // Skills
     const skillsBox = document.getElementById("skills");
     skillsBox.innerHTML = "";
 
@@ -141,7 +142,7 @@ fetch(`${BASE_URL}/api/teacher/${uid}`)
       skillsBox.innerText = "—";
     }
 
-    // Resume PDF buttons (if uploaded)
+    // Resume PDF
     const pdfBox = document.getElementById("pdfBox");
     const pdfLink = buildResumeLink(t.resumeUrl);
 
@@ -153,11 +154,11 @@ fetch(`${BASE_URL}/api/teacher/${uid}`)
         <a href="${pdfLink}" download>Download PDF</a>
       `;
     } else {
-      pdfBox.innerHTML = `<p class="muted">❌ Resume PDF not uploaded</p>`;
+      pdfBox.innerHTML =
+        `<p class="muted">❌ Resume PDF not uploaded</p>`;
     }
   })
-  .catch(err => {
-    console.error(err);
+  .catch(() => {
     alert("Server error");
   });
 </script>
