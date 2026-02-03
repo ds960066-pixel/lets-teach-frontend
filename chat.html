@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <title>Lets Teach Chat</title>
 
+  <!-- Backend Base URL -->
+  <script src="./config.js"></script>
+
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
   <style>
@@ -74,8 +77,6 @@ if (
 <button onclick="sendMessage()">Send</button>
 
 <script>
-const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
-
 /* ---------- SOURCE OF TRUTH ---------- */
 const senderUid = localStorage.getItem("uid");
 const receiverUid = localStorage.getItem("chatWith");
@@ -109,7 +110,6 @@ function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
 
-  // show instantly
   appendMessage(senderUid, text);
 
   socket.emit("sendMessage", {
@@ -123,7 +123,6 @@ function sendMessage() {
 
 /* ---------- RECEIVE ---------- */
 socket.on("receiveMessage", (msg) => {
-  // avoid duplicate self-message
   if (msg.senderUid !== senderUid) {
     appendMessage(msg.senderUid, msg.text);
   }
