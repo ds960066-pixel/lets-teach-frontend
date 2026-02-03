@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <title>Institute Dashboard | Lets Teach</title>
-  
-  <!-- Backend Base URL -->
+
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,8 +14,6 @@
       padding: 20px;
       margin: 0;
     }
-
-    h2 { margin-top: 0; }
 
     .card {
       background: #fff;
@@ -43,27 +42,15 @@
       cursor: pointer;
     }
 
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .ok {
-      background: #eafaf1;
-      color: #1e7e34;
-      border: 1px solid #c3e6cb;
-      padding: 10px;
-      border-radius: 6px;
-      margin-bottom: 12px;
-    }
-
-    .error {
-      background: #fdecea;
-      color: #a94442;
-      border: 1px solid #f5c6cb;
-      padding: 10px;
-      border-radius: 6px;
-      margin-top: 10px;
+    .row > div {
+      flex: 1;
+      min-width: 200px;
     }
 
     .success {
@@ -75,15 +62,13 @@
       margin-top: 10px;
     }
 
-    .row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .row > div {
-      flex: 1;
-      min-width: 200px;
+    .error {
+      background: #fdecea;
+      color: #a94442;
+      border: 1px solid #f5c6cb;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -91,7 +76,7 @@
 <body>
 
 <script>
-/* ================= AUTH GUARD ================= */
+/* ===== AUTH GUARD ===== */
 if (!localStorage.uid || localStorage.role !== "institute") {
   window.location.href = "login.html";
 }
@@ -102,49 +87,23 @@ if (!localStorage.uid || localStorage.role !== "institute") {
 
 <hr>
 
-<!-- ✅ STATUS INFO -->
-<div class="ok">
-  ✅ Phone verification temporarily disabled. You can post jobs.
-</div>
-
-<!-- ================= CREATE JOB ================= -->
 <div class="card">
   <h3>Create Job</h3>
 
-  <div class="row">
-    <div>
-      <label>Job Title *</label>
-      <input id="jobTitle" placeholder="e.g. Maths Teacher" />
-    </div>
-    <div>
-      <label>City *</label>
-      <input id="jobCity" placeholder="e.g. Meerut" />
-    </div>
-  </div>
+  <input id="jobTitle" placeholder="Job Title *">
+  <input id="jobCity" placeholder="City *">
+  <input id="jobSubject" placeholder="Subject *">
 
-  <div class="row">
-    <div>
-      <label>Subject *</label>
-      <input id="jobSubject" placeholder="e.g. Maths, English" />
-    </div>
-    <div>
-      <label>Role</label>
-      <select id="jobRole">
-        <option value="both">Both</option>
-        <option value="part-time">Part-time</option>
-        <option value="full-time">Full-time</option>
-      </select>
-    </div>
-  </div>
+  <select id="jobRole">
+    <option value="both">Both</option>
+    <option value="part-time">Part-time</option>
+    <option value="full-time">Full-time</option>
+  </select>
 
-  <label>Salary</label>
-  <input id="jobSalary" placeholder="e.g. 30000 / Negotiable" />
-
-  <label>Description</label>
-  <textarea id="jobDescription" placeholder="Experience, timing, requirements..."></textarea>
+  <input id="jobSalary" placeholder="Salary / Negotiable">
+  <textarea id="jobDescription" placeholder="Job description"></textarea>
 
   <button onclick="postJob()">Post Job</button>
-
   <div id="jobResult"></div>
 </div>
 
@@ -161,17 +120,17 @@ if (!localStorage.uid || localStorage.role !== "institute") {
 <div id="applications"></div>
 
 <script>
-const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+/* ===== CONTEXT ===== */
 const uid = localStorage.getItem("uid");
 
-/* ================= LOGOUT ================= */
-function logout() {
+/* ===== LOGOUT ===== */
+window.logout = function () {
   localStorage.clear();
   window.location.href = "login.html";
-}
+};
 
-/* ================= POST JOB ================= */
-async function postJob() {
+/* ===== POST JOB ===== */
+window.postJob = async function () {
   const title = jobTitle.value.trim();
   const city = jobCity.value.trim();
   const subject = jobSubject.value.trim();
@@ -180,7 +139,7 @@ async function postJob() {
   const description = jobDescription.value.trim();
 
   if (!title || !city || !subject) {
-    alert("Please fill Job Title, City and Subject");
+    alert("Job Title, City and Subject are required");
     return;
   }
 
@@ -203,21 +162,26 @@ async function postJob() {
 
     const data = await res.json();
 
-    if (!res.ok || !data.success) {
-      jobResult.innerHTML = `<div class="error">${data.message || "Job post failed"}</div>`;
+    if (!data.success) {
+      jobResult.innerHTML =
+        `<div class="error">${data.message || "Job post failed"}</div>`;
       return;
     }
 
-    jobResult.innerHTML = `<div class="success">✅ Job posted successfully</div>`;
-    jobTitle.value = jobCity.value = jobSubject.value = jobSalary.value = jobDescription.value = "";
-  } catch (e) {
-    console.error(e);
-    jobResult.innerHTML = `<div class="error">Server error</div>`;
-  }
-}
+    jobResult.innerHTML =
+      `<div class="success">✅ Job posted successfully</div>`;
 
-/* ================= BROWSE TEACHERS ================= */
-async function browseTeachers() {
+    jobTitle.value = jobCity.value = jobSubject.value =
+      jobSalary.value = jobDescription.value = "";
+
+  } catch {
+    jobResult.innerHTML =
+      `<div class="error">Server error</div>`;
+  }
+};
+
+/* ===== BROWSE TEACHERS ===== */
+window.browseTeachers = async function () {
   const box = document.getElementById("teachers");
   box.innerHTML = "Loading...";
 
@@ -235,21 +199,24 @@ async function browseTeachers() {
     data.teachers.forEach(t => {
       const div = document.createElement("div");
       div.className = "card";
-      div.innerHTML = `<b>${t.name}</b> – ${t.subject} (${t.city || ""})`;
+      div.innerHTML =
+        `<b>${t.name}</b> – ${t.subject} (${t.city || ""})`;
       box.appendChild(div);
     });
   } catch {
     box.innerHTML = "<p>Error loading teachers</p>";
   }
-}
+};
 
-/* ================= LOAD APPLICATIONS ================= */
-async function loadApplications() {
+/* ===== LOAD APPLICATIONS ===== */
+window.loadApplications = async function () {
   const box = document.getElementById("applications");
   box.innerHTML = "Loading...";
 
   try {
-    const res = await fetch(`${BASE_URL}/api/job/applications/institute/${uid}`);
+    const res = await fetch(
+      `${BASE_URL}/api/job/applications/institute/${uid}`
+    );
     const data = await res.json();
 
     box.innerHTML = "";
@@ -262,13 +229,15 @@ async function loadApplications() {
     data.applications.forEach(app => {
       const div = document.createElement("div");
       div.className = "card";
-      div.innerHTML = `<b>Teacher UID:</b> ${app.teacherUid}<br><b>Status:</b> ${app.status}`;
+      div.innerHTML =
+        `<b>Teacher UID:</b> ${app.teacherUid}<br>
+         <b>Status:</b> ${app.status}`;
       box.appendChild(div);
     });
   } catch {
     box.innerHTML = "<p>Error loading applications</p>";
   }
-}
+};
 </script>
 
 </body>
