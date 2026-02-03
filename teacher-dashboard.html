@@ -23,7 +23,7 @@ if (!localStorage.uid || localStorage.role !== "teacher") {
 
 <hr>
 
-<!-- ✅ PDF UPLOAD -->
+<!-- ===== PDF UPLOAD ===== -->
 <h3>📎 Upload Resume (PDF)</h3>
 <input type="file" id="resumeFile" accept="application/pdf" />
 <button onclick="uploadResume()">Upload Resume</button>
@@ -31,7 +31,7 @@ if (!localStorage.uid || localStorage.role !== "teacher") {
 
 <hr>
 
-<!-- ✅ RESUME STATUS + ACTIONS -->
+<!-- ===== RESUME STATUS ===== -->
 <h3>📄 My Resume</h3>
 <p id="resumeStatus">Checking resume status...</p>
 
@@ -40,6 +40,7 @@ if (!localStorage.uid || localStorage.role !== "teacher") {
 
 <hr>
 
+<!-- ===== INVITES ===== -->
 <h3>📨 My Invites</h3>
 <ul id="inviteList"></ul>
 
@@ -48,13 +49,13 @@ if (!localStorage.uid || localStorage.role !== "teacher") {
 const uid = localStorage.getItem("uid");
 
 /* ===== LOGOUT ===== */
-function logout() {
+window.logout = function () {
   localStorage.clear();
   window.location.href = "login.html";
-}
+};
 
-/* ===== PDF UPLOAD ===== */
-async function uploadResume() {
+/* ===== UPLOAD RESUME ===== */
+window.uploadResume = async function () {
   const file = document.getElementById("resumeFile").files[0];
   if (!file) {
     alert("Select PDF file");
@@ -65,10 +66,10 @@ async function uploadResume() {
   formData.append("resume", file);
 
   try {
-    const res = await fetch(`${BASE_URL}/api/teacher/upload-resume/${uid}`, {
-      method: "POST",
-      body: formData
-    });
+    const res = await fetch(
+      `${BASE_URL}/api/teacher/upload-resume/${uid}`,
+      { method: "POST", body: formData }
+    );
 
     const data = await res.json();
     document.getElementById("uploadStatus").innerText =
@@ -79,9 +80,19 @@ async function uploadResume() {
     document.getElementById("uploadStatus").innerText =
       "Upload failed. Server error.";
   }
-}
+};
 
-/* ===== CHECK RESUME STATUS ===== */
+/* ===== RESUME STATUS ===== */
 async function loadResumeStatus() {
   try {
-    const res = await fetch(`${BASE_URL}/api/tea_
+    const res = await fetch(`${BASE_URL}/api/teacher/${uid}`);
+    const data = await res.json();
+
+    if (!data.success) {
+      document.getElementById("resumeStatus").innerText =
+        "Error loading resume status";
+      return;
+    }
+
+    const t = data.teacher;
+    const complete =
