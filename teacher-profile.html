@@ -3,7 +3,7 @@
 <head>
   <title>Teacher Profile</title>
 
-  <!-- Backend Base URL -->
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
 </head>
 
@@ -18,24 +18,41 @@
 </div>
 
 <script>
+/* ================= CONTEXT ================= */
 const uid = localStorage.getItem("uid");
 const type = localStorage.getItem("userType");
 const teacherUid = new URLSearchParams(location.search).get("uid");
 
-if (!teacherUid) location.href = "teacher.html";
-if (!(uid && type === "institute"))
-  actions.style.display = "none";
+const actionsBox = document.getElementById("actions");
 
+if (!teacherUid) {
+  window.location.href = "teacher.html";
+}
+
+if (!(uid && type === "institute")) {
+  actionsBox.style.display = "none";
+}
+
+/* ================= LOAD TEACHER ================= */
 fetch(`${BASE_URL}/api/teacher/${teacherUid}`)
   .then(r => r.json())
   .then(d => {
+    if (!d.teacher) {
+      alert("Teacher not found");
+      return;
+    }
+
     const t = d.teacher;
-    name.innerText = t.name;
-    info.innerText =
+    document.getElementById("name").innerText = t.name;
+    document.getElementById("info").innerText =
       `${t.subject} | ${t.city} | ${t.experience || 0} yrs`;
+  })
+  .catch(() => {
+    alert("Failed to load teacher");
   });
 
-function invite() {
+/* ================= INVITE (GLOBAL) ================= */
+window.invite = function () {
   fetch(`${BASE_URL}/api/invite/create`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -47,13 +64,14 @@ function invite() {
     })
   })
     .then(r => r.json())
-    .then(d => alert(d.message));
-}
+    .then(d => alert(d.message || "Invite sent"));
+};
 
-function chat() {
-  location.href =
+/* ================= CHAT (GLOBAL) ================= */
+window.chat = function () {
+  window.location.href =
     `chat.html?senderUid=${uid}&receiverUid=${teacherUid}`;
-}
+};
 </script>
 
 </body>
