@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html>
-<head><title>Teacher Profile</title></head>
+<head>
+  <title>Teacher Profile</title>
+
+  <!-- Backend Base URL -->
+  <script src="./config.js"></script>
+</head>
+
 <body>
 
 <h2 id="name">Loading...</h2>
@@ -12,7 +18,6 @@
 </div>
 
 <script>
-const BASE_URL = "https://express-hello-world-uh96.onrender.com";
 const uid = localStorage.getItem("uid");
 const type = localStorage.getItem("userType");
 const teacherUid = new URLSearchParams(location.search).get("uid");
@@ -40,7 +45,9 @@ function invite() {
       toType: "teacher",
       toUid: teacherUid
     })
-  }).then(r => r.json()).then(d => alert(d.message));
+  })
+    .then(r => r.json())
+    .then(d => alert(d.message));
 }
 
 function chat() {
