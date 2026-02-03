@@ -6,13 +6,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <meta name="description"
-        content="Find teachers and institutes by city and subject. Lets Teach is a free public platform for education hiring." />
+  <meta
+    name="description"
+    content="Find teachers and institutes by city and subject. Lets Teach is a free public platform for education hiring."
+  />
 
-  <meta name="keywords"
-        content="teachers, institutes, teaching jobs, school hiring, lets teach" />
+  <meta
+    name="keywords"
+    content="teachers, institutes, teaching jobs, school hiring, lets teach"
+  />
 
-  <!-- Backend Base URL -->
+  <!-- Backend Base URL (SINGLE SOURCE) -->
   <script src="./config.js"></script>
 </head>
 
@@ -52,8 +56,8 @@
 <hr>
 
 <p>
-  <a href="login.html">Login</a> |
-  <a href="jobs.html">Browse Jobs</a>
+  <a href="./login.html">Login</a> |
+  <a href="./jobs.html">Browse Jobs</a>
 </p>
 
 <script>
@@ -66,7 +70,7 @@ function applyFilter() {
   loadInstitutes(city);
 }
 
-/* ================= LOAD TEACHERS (SEMI-PUBLIC) ================= */
+/* ================= LOAD TEACHERS (PUBLIC) ================= */
 function loadTeachers(city = "", subject = "") {
   let url = `${BASE_URL}/api/teacher/public`;
 
@@ -100,7 +104,7 @@ function loadTeachers(city = "", subject = "") {
           <b>${t.name}</b>${statusTag}<br>
           ${t.subject} — ${t.city}<br>
           Experience: ${t.experience || 0} yrs<br>
-          <a href="teacher.html?uid=${t.uid}">View Profile</a>
+          <a href="./teacher.html?uid=${t.uid}">View Profile</a>
           <hr>
         `;
         ul.appendChild(li);
@@ -108,46 +112,4 @@ function loadTeachers(city = "", subject = "") {
     })
     .catch(() => {
       document.getElementById("teachers").innerHTML =
-        "<li>Error loading teachers</li>";
-    });
-}
-
-/* ================= LOAD INSTITUTES (SEMI-PUBLIC) ================= */
-function loadInstitutes(city = "") {
-  let url = `${BASE_URL}/api/institute/public`;
-
-  if (city) {
-    url += `?city=${encodeURIComponent(city)}`;
-  }
-
-  fetch(url)
-    .then(res => res.json())
-    .then(data => {
-      const ul = document.getElementById("institutes");
-      ul.innerHTML = "";
-
-      if (!data.institutes || data.institutes.length === 0) {
-        ul.innerHTML = "<li>No institutes found</li>";
-        return;
-      }
-
-      data.institutes.forEach(i => {
-        const statusTag =
-          i.verificationStatus !== "verified"
-            ? " <small style='color:red'>(Unverified)</small>"
-            : " <small style='color:green'>(Verified)</small>";
-
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <b>${i.name}</b>${statusTag}<br>
-          ${i.city}<br>
-          Subjects Needed: ${(i.subjectsNeeded || []).join(", ") || "—"}<br>
-          <a href="institute.html?uid=${i.uid}">View Profile</a>
-          <hr>
-        `;
-        ul.appendChild(li);
-      });
-    })
-    .catch(() => {
-      document.getElementById("institutes").innerHTML =
-        "<li>Error load
+        "<li>Error
