@@ -3,9 +3,10 @@
 <head>
   <title>Realtime Chat | Lets Teach</title>
 
-  <!-- Backend Base URL -->
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
   <style>
     body { font-family: Arial; padding: 20px; }
     #chat {
@@ -30,7 +31,7 @@
 
 <body>
 
-<h2>Realtime Chat (Local Test)</h2>
+<h2>Realtime Chat</h2>
 
 <div id="chat"></div>
 
@@ -38,40 +39,40 @@
 <button onclick="send()">Send</button>
 
 <script>
-  const params = new URLSearchParams(window.location.search);
+/* ================= CONTEXT ================= */
+const params = new URLSearchParams(window.location.search);
 
-  // fallback values (important)
-  const roomId = params.get("roomId") || "room1";
-  const me = params.get("me") || "user1";
-  const other = params.get("other");
+// fallback values (safe)
+const roomId = params.get("roomId") || "room1";
+const me = params.get("me") || "user1";
 
-  // ✅ LOCAL BACKEND
-  const socket = io("http://localhost:5000");
+/* ================= SOCKET ================= */
+const socket = io(BASE_URL);
 
-  socket.on("connect", () => {
-    console.log("Socket connected");
-    socket.emit("joinRoom", roomId);
+socket.on("connect", () => {
+  socket.emit("joinRoom", roomId);
+});
+
+socket.on("receiveMessage", (data) => {
+  const div = document.createElement("div");
+  div.className = data.senderUid === me ? "me" : "other";
+  div.innerText = data.senderUid + ": " + data.text;
+  document.getElementById("chat").appendChild(div);
+});
+
+/* ================= SEND (GLOBAL) ================= */
+window.send = function () {
+  const text = document.getElementById("msg").value.trim();
+  if (!text) return;
+
+  socket.emit("sendMessage", {
+    senderUid: me,
+    text,
+    roomId
   });
 
-  socket.on("receiveMessage", (data) => {
-    const div = document.createElement("div");
-    div.className = data.senderUid === me ? "me" : "other";
-    div.innerText = data.senderUid + ": " + data.text;
-    document.getElementById("chat").appendChild(div);
-  });
-
-  function send() {
-    const text = msg.value.trim();
-    if (!text) return;
-
-    socket.emit("sendMessage", {
-      senderUid: me,
-      text,
-      roomId
-    });
-
-    msg.value = "";
-  }
+  document.getElementById("msg").value = "";
+};
 </script>
 
 </body>
