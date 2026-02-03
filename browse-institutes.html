@@ -3,9 +3,10 @@
 <head>
   <title>Browse Institutes | Lets Teach</title>
 
-   <!-- Backend Base URL -->
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="../config.js"></script>
 </head>
+
 <body>
 
 <h2>Browse Institutes</h2>
@@ -16,12 +17,26 @@
 <ul id="list"></ul>
 
 <script>
-const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
-const MY_UID = "demof12345"; // teacher uid
+/* ================= CONTEXT ================= */
+const MY_UID = localStorage.getItem("uid");
+const ROLE = localStorage.getItem("userType");
 
-function search() {
-  const city = document.getElementById("city").value;
-  const url = `${BASE_URL}/api/institute/search?city=${encodeURIComponent(city)}`;
+if (!MY_UID || ROLE !== "teacher") {
+  alert("Please login as Teacher");
+  window.location.href = "login.html";
+}
+
+/* ================= SEARCH INSTITUTES (GLOBAL) ================= */
+window.search = function () {
+  const city = document.getElementById("city").value.trim();
+
+  if (!city) {
+    alert("Enter city");
+    return;
+  }
+
+  const url =
+    `${BASE_URL}/api/institute/search?city=${encodeURIComponent(city)}`;
 
   fetch(url)
     .then(r => r.json())
@@ -29,19 +44,30 @@ function search() {
       const ul = document.getElementById("list");
       ul.innerHTML = "";
 
-      (d.institutes || []).forEach(i => {
+      if (!d.institutes || d.institutes.length === 0) {
+        ul.innerHTML = "<li>No institutes found</li>";
+        return;
+      }
+
+      d.institutes.forEach(i => {
         const li = document.createElement("li");
         li.innerHTML = `
           <b>${i.name || i.uid}</b> — ${i.city}<br>
-          <button onclick="invite('${i.uid}')">Send Invite</button>
+          <button onclick="invite('${i.uid}')">
+            Send Invite
+          </button>
           <hr>
         `;
         ul.appendChild(li);
       });
+    })
+    .catch(() => {
+      alert("Failed to load institutes");
     });
-}
+};
 
-function invite(instituteUid) {
+/* ================= SEND INVITE (GLOBAL) ================= */
+window.invite = function (instituteUid) {
   fetch(`${BASE_URL}/api/invite/create`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -52,9 +78,14 @@ function invite(instituteUid) {
       toUid: instituteUid
     })
   })
-  .then(r => r.json())
-  .then(d => alert(d.success ? "Invite sent" : d.message));
-}
+    .then(r => r.json())
+    .then(d => {
+      alert(d.success ? "Invite sent" : d.message);
+    })
+    .catch(() => {
+      alert("Server error");
+    });
+};
 </script>
 
 </body>
