@@ -4,13 +4,14 @@
   <meta charset="UTF-8" />
   <title>Applications | Lets Teach</title>
 
-  
-  <!-- Backend Base URL -->
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
 </head>
+
 <body>
 
 <script>
+/* ===== AUTH GUARD ===== */
 if (!localStorage.uid || localStorage.role !== "institute") {
   window.location.href = "login.html";
 }
@@ -24,12 +25,15 @@ if (!localStorage.uid || localStorage.role !== "institute") {
 <div id="box">Loading...</div>
 
 <script>
-const BASE_URL = "https://express-hello-world-uh96.onrender.com";
+/* ===== CONTEXT ===== */
 const uid = localStorage.getItem("uid");
 
+/* ===== LOAD APPLICATIONS ===== */
 async function loadApps() {
   try {
-    const res = await fetch(`${BASE_URL}/api/job/applications/institute/${uid}`);
+    const res = await fetch(
+      `${BASE_URL}/api/job/applications/institute/${uid}`
+    );
     const data = await res.json();
 
     const box = document.getElementById("box");
@@ -49,33 +53,38 @@ async function loadApps() {
       div.style.marginBottom = "10px";
       div.style.border = "1px solid #ddd";
 
-      const resumeLink = t && t.resumeUrl
-        ? `${BASE_URL}${t.resumeUrl.startsWith("/") ? "" : "/"}${t.resumeUrl}`
-        : null;
+      const resumeLink =
+        t && t.resumeUrl
+          ? t.resumeUrl.startsWith("http")
+            ? t.resumeUrl
+            : `${BASE_URL}${t.resumeUrl.startsWith("/") ? "" : "/"}${t.resumeUrl}`
+          : null;
 
       div.innerHTML = `
         <b>Teacher:</b> ${t ? t.name : app.teacherUid} <br>
         <b>City:</b> ${t ? t.city : "-"} <br>
         <b>Subject:</b> ${t ? t.subject : "-"} <br>
-        <b>Status:</b> ${app.status || "applied"} <br>
-        <br>
+        <b>Status:</b> ${app.status || "applied"} <br><br>
+
         ${
           resumeLink
-          ? `<a href="${resumeLink}" target="_blank">👁 View Resume PDF</a>
-             &nbsp; | &nbsp;
-             <a href="${resumeLink}" download>⬇ Download</a>`
-          : `<span style="color:red;">❌ Resume PDF not uploaded</span>`
+            ? `<a href="${resumeLink}" target="_blank">👁 View Resume PDF</a>
+               &nbsp; | &nbsp;
+               <a href="${resumeLink}" download>⬇ Download</a>`
+            : `<span style="color:red;">❌ Resume PDF not uploaded</span>`
         }
         <hr>
       `;
 
       box.appendChild(div);
     });
-  } catch (e) {
-    document.getElementById("box").innerHTML = "<p>Server error</p>";
+  } catch {
+    document.getElementById("box").innerHTML =
+      "<p>Server error</p>";
   }
 }
 
+/* ===== INIT ===== */
 loadApps();
 </script>
 
