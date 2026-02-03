@@ -4,8 +4,9 @@
   <meta charset="UTF-8" />
   <title>Teacher Profile | Lets Teach</title>
 
-<!-- Backend Base URL -->
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
+
   <style>
     body {
       font-family: Arial;
@@ -52,7 +53,6 @@
 </div>
 
 <script>
-const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
 const params = new URLSearchParams(window.location.search);
 const teacherUid = params.get("uid");
 
@@ -82,9 +82,10 @@ fetch(`${BASE_URL}/api/teacher/${teacherUid}`)
     window.location.href = "index.html";
   });
 
-function goLogin() {
+/* ================= LOGIN REDIRECT (GLOBAL) ================= */
+window.goLogin = function () {
   window.location.href = "login.html";
-}
+};
 </script>
 
 </body>
