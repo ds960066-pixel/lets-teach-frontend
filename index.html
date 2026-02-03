@@ -11,6 +11,9 @@
 
   <meta name="keywords"
         content="teachers, institutes, teaching jobs, school hiring, lets teach" />
+
+  <!-- Backend Base URL -->
+  <script src="./config.js"></script>
 </head>
 
 <body>
@@ -54,8 +57,6 @@
 </p>
 
 <script>
-const BASE_URL = "https://express-hello-world-uh96.onrender.com";
-
 /* ================= APPLY FILTER ================= */
 function applyFilter() {
   const city = document.getElementById("city").value.trim();
@@ -149,14 +150,4 @@ function loadInstitutes(city = "") {
     })
     .catch(() => {
       document.getElementById("institutes").innerHTML =
-        "<li>Error loading institutes</li>";
-    });
-}
-
-/* ================= INITIAL LOAD ================= */
-loadTeachers();
-loadInstitutes();
-</script>
-
-</body>
-</html>
+        "<li>Error load
