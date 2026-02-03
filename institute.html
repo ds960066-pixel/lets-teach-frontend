@@ -4,9 +4,10 @@
   <meta charset="UTF-8" />
   <title>Browse Institutes | Lets Teach</title>
 
-  <!-- Backend Base URL -->
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
 </head>
+
 <body>
 
 <h2>Browse Institutes</h2>
@@ -19,10 +20,8 @@
 <ul id="list"></ul>
 
 <script>
-const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
-
-/* ================= LOAD INSTITUTES ================= */
-function loadInstitutes() {
+/* ================= LOAD INSTITUTES (GLOBAL) ================= */
+window.loadInstitutes = function () {
   const city = document.getElementById("city").value.trim();
   let url = `${BASE_URL}/api/institute/browse`;
 
@@ -59,9 +58,7 @@ function loadInstitutes() {
         if (myRole === "teacher" && myUid) {
           li.innerHTML += `
             <small>
-              <a href="login.html">
-                Go to dashboard to invite
-              </a>
+              Go to dashboard to invite
             </small>
           `;
         } else {
@@ -78,8 +75,10 @@ function loadInstitutes() {
         ul.appendChild(li);
       });
     })
-    .catch(() => alert("Server error"));
-}
+    .catch(() => {
+      alert("Server error");
+    });
+};
 
 /* ================= INITIAL LOAD ================= */
 loadInstitutes();
