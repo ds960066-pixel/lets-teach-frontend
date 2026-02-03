@@ -3,9 +3,10 @@
 <head>
   <title>Institute Profile | Lets Teach</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-  <!-- Backend Base URL -->
+
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
+
   <style>
     body {
       margin: 0;
@@ -81,69 +82,4 @@
   </div>
 
   <div class="field">
-    <div class="label">Address</div>
-    <div class="value" id="address"></div>
-  </div>
-
-  <div class="field">
-    <div class="label">Subjects Needed</div>
-    <ul id="subjects"></ul>
-  </div>
-
-  <div class="actions">
-    <button class="job" onclick="viewJobs()">View Jobs</button>
-    <button class="chat" onclick="openChat()">Chat</button>
-  </div>
-</div>
-
-<script>
-const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
-
-/* -------- AUTH STATE -------- */
-const uid = localStorage.getItem("uid");
-const userType = localStorage.getItem("userType");
-
-/* -------- GET INSTITUTE UID FROM URL -------- */
-const params = new URLSearchParams(window.location.search);
-const instituteUid = params.get("uid");
-
-/* -------- LOAD INSTITUTE PROFILE -------- */
-fetch(`${BASE_URL}/api/institute/${instituteUid}`)
-  .then(res => res.json())
-  .then(data => {
-    const i = data.institute;
-    document.getElementById("name").innerText = i.name;
-    document.getElementById("city").innerText = i.city;
-    document.getElementById("address").innerText = i.address || "—";
-
-    const list = document.getElementById("subjects");
-    list.innerHTML = "";
-    (i.subjectsNeeded || []).forEach(s => {
-      const li = document.createElement("li");
-      li.innerText = s;
-      list.appendChild(li);
-    });
-  });
-
-/* -------- ACTIONS (STEP-5 FLOW) -------- */
-
-function viewJobs() {
-  // anyone can view jobs (public)
-  window.location.href = "job.html";
-}
-
-function openChat() {
-  // 🔒 only teacher can start chat from here
-  if (!uid || userType !== "teacher") {
-    window.location.href =
-      `login.html?redirect=institute-profile&uid=${instituteUid}`;
-    return;
-  }
-
-  window.location.href =
-    `chat.html?senderUid=${uid}&receiverUid=${instituteUid}`;
-}
-</script>
-
-</body>
-</html>
+    <div class="labe
