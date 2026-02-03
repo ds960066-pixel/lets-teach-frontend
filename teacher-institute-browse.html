@@ -4,9 +4,10 @@
   <title>Browse Institutes | Lets Teach</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-<!-- Backend Base URL -->
+
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -59,9 +60,7 @@
 <div id="list"></div>
 
 <script>
-const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
-
-/* AUTH CHECK */
+/* ================= AUTH CHECK ================= */
 const teacherUid = localStorage.getItem("uid");
 const userType = localStorage.getItem("userType");
 
@@ -70,8 +69,8 @@ if (!teacherUid || userType !== "teacher") {
   window.location.href = "login.html";
 }
 
-/* LOAD INSTITUTES */
-function loadInstitutes() {
+/* ================= LOAD INSTITUTES (GLOBAL) ================= */
+window.loadInstitutes = function () {
   const city = document.getElementById("city").value.trim();
   const box = document.getElementById("list");
 
@@ -100,55 +99,3 @@ function loadInstitutes() {
 
         if (i.registered) {
           actionHTML = `
-            <button onclick="sendInvite('${i.uid}')">
-              Send Invite
-            </button>
-          `;
-        } else {
-          actionHTML = `
-            <div class="blocked">
-              This institute is not registered yet.<br>
-              Contact: ${i.phone || "Not available"}
-            </div>
-          `;
-        }
-
-        div.innerHTML = `
-          <h3>${i.name}</h3>
-          <p><b>City:</b> ${i.city}</p>
-          <p><b>Subjects Needed:</b> ${(i.subjectsNeeded || []).join(", ") || "—"}</p>
-          ${actionHTML}
-        `;
-
-        box.appendChild(div);
-      });
-    })
-    .catch(() => {
-      box.innerHTML = "<p>Error loading institutes</p>";
-    });
-}
-
-/* SEND INVITE */
-function sendInvite(instituteUid) {
-  fetch(`${BASE_URL}/api/invite/create`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      fromType: "teacher",
-      fromUid: teacherUid,
-      toType: "institute",
-      toUid: instituteUid
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    alert(data.message || "Invite sent");
-  })
-  .catch(() => {
-    alert("Server error");
-  });
-}
-</script>
-
-</body>
-</html>
