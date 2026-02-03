@@ -2,9 +2,11 @@
 <html>
 <head>
   <title>OTP Test | Lets Teach</title>
-  
-  <!-- Backend Base URL -->
+
+  <!-- ✅ SINGLE SOURCE OF BACKEND -->
   <script src="./config.js"></script>
+
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
@@ -23,60 +25,78 @@
 <div id="msg"></div>
 
 <script>
-  // 🔥 Firebase Web Config (tumhara hi project)
-  const firebaseConfig = {
-    apiKey: "AIzaSyB4MyvDI2QZbWTXyJsbnSJ5CehCW_MoEK0",
-    authDomain: "lets-teach-37cb9.firebaseapp.com",
-    projectId: "lets-teach-37cb9"
-  };
+/* ================= FIREBASE CONFIG ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyB4MyvDI2QZbWTXyJsbnSJ5CehCW_MoEK0",
+  authDomain: "lets-teach-37cb9.firebaseapp.com",
+  projectId: "lets-teach-37cb9"
+};
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 
-  // Recaptcha
-  window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
-    document.body,
-    { size: "invisible" }
-  );
+/* ================= INVISIBLE RECAPTCHA ================= */
+window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
+  document.body,
+  { size: "invisible" }
+);
 
-  let confirmationResult = null;
+let confirmationResult = null;
 
-  async function sendOTP() {
-    const phone = document.getElementById("phone").value;
+/* ================= SEND OTP ================= */
+async function sendOTP() {
+  const phone = document.getElementById("phone").value.trim();
+  if (!phone) {
+    alert("Enter phone number");
+    return;
+  }
 
+  try {
     confirmationResult = await auth.signInWithPhoneNumber(
       phone,
       window.recaptchaVerifier
     );
 
-    document.getElementById("msg").innerText = "OTP sent";
+    document.getElementById("msg").innerText = "✅ OTP sent";
+  } catch (e) {
+    console.error(e);
+    document.getElementById("msg").innerText = "❌ Failed to send OTP";
+  }
+}
+
+/* ================= VERIFY OTP ================= */
+async function verifyOTP() {
+  const otp = document.getElementById("otp").value.trim();
+  if (!otp || !confirmationResult) {
+    alert("OTP missing");
+    return;
   }
 
-  async function verifyOTP() {
-    const otp = document.getElementById("otp").value;
-
+  try {
     const result = await confirmationResult.confirm(otp);
     const user = result.user;
 
-    // 🔑 Firebase ID TOKEN
+    // 🔑 Firebase ID Token
     const idToken = await user.getIdToken();
 
-    // 🔥 BACKEND CALL
-    const res = await fetch(
-      "https://lets-teach-backend-v38i.onrender.com/api/institute/verify-phone",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uid: localStorage.getItem("uid"), // institute uid
-          idToken
-        })
-      }
-    );
+    // 🔥 BACKEND VERIFY (CONFIG BASE_URL)
+    const res = await fetch(`${BASE_URL}/api/institute/verify-phone`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uid: localStorage.getItem("uid"),
+        idToken
+      })
+    });
 
     const data = await res.json();
-    document.getElementById("msg").innerText = JSON.stringify(data);
+    document.getElementById("msg").innerText =
+      data.success ? "✅ Phone verified" : JSON.stringify(data);
+  } catch (e) {
+    console.error(e);
+    document.getElementById("msg").innerText = "❌ OTP verification failed";
   }
+}
 </script>
 
 </body>
