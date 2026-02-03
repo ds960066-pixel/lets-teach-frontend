@@ -4,8 +4,9 @@
   <meta charset="UTF-8" />
   <title>Teacher Registration | Lets Teach</title>
 
-  <!-- Backend Base URL -->
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -54,14 +55,12 @@ if (!localStorage.uid || localStorage.role !== "teacher") {
 <button onclick="registerTeacher()">Register & Continue</button>
 
 <script>
-const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
-
-/* ================= SOURCE OF TRUTH ================= */
+/* ================= GLOBAL ================= */
 const uid = localStorage.getItem("uid");
 document.getElementById("uidText").innerText = uid;
 
-/* ================= REGISTER ================= */
-async function registerTeacher() {
+/* ================= REGISTER (GLOBAL) ================= */
+window.registerTeacher = async function () {
   const name = document.getElementById("name").value.trim();
   const phone = document.getElementById("phone").value.trim();
   const subject = document.getElementById("subject").value.trim();
@@ -94,12 +93,12 @@ async function registerTeacher() {
       return;
     }
 
-    // ✅ AUTO REDIRECT TO DASHBOARD
+    // ✅ AUTO REDIRECT
     window.location.href = "teacher-dashboard.html";
-  } catch (err) {
+  } catch {
     alert("Server error");
   }
-}
+};
 </script>
 
 </body>
