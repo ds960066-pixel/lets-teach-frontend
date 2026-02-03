@@ -2,9 +2,10 @@
 <html>
 <head>
   <title>Browse Teachers | Lets Teach</title>
-  
- <!-- Backend Base URL -->
+
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="../config.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,9 +13,7 @@
       padding: 20px;
     }
 
-    h2 {
-      color: #2e86de;
-    }
+    h2 { color: #2e86de; }
 
     input, button {
       padding: 8px;
@@ -60,16 +59,23 @@
 <div id="list"></div>
 
 <script>
-const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
+/* ================= CONTEXT ================= */
+const instituteUid = localStorage.getItem("uid");
+const role = localStorage.getItem("userType");
 
-function search() {
-  const city = document.getElementById("city").value;
-  const subject = document.getElementById("subject").value;
+if (!instituteUid || role !== "institute") {
+  alert("Please login as Institute");
+  window.location.href = "login.html";
+}
+
+/* ================= SEARCH TEACHERS (GLOBAL) ================= */
+window.search = function () {
+  const city = document.getElementById("city").value.trim();
+  const subject = document.getElementById("subject").value.trim();
 
   let url = `${BASE_URL}/api/teacher/search?`;
-
-  if (city) url += `city=${city}&`;
-  if (subject) url += `subject=${subject}`;
+  if (city) url += `city=${encodeURIComponent(city)}&`;
+  if (subject) url += `subject=${encodeURIComponent(subject)}`;
 
   document.getElementById("list").innerHTML = "Loading...";
 
@@ -106,13 +112,10 @@ function search() {
       document.getElementById("list").innerHTML =
         "<p>Error loading teachers</p>";
     });
-}
+};
 
-function invite(teacherUid) {
-  const instituteUid = prompt("Enter your Institute UID");
-
-  if (!instituteUid) return;
-
+/* ================= SEND INVITE (GLOBAL) ================= */
+window.invite = function (teacherUid) {
   fetch(`${BASE_URL}/api/invite/create`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -123,11 +126,14 @@ function invite(teacherUid) {
       toUid: teacherUid
     })
   })
-  .then(res => res.json())
-  .then(data => {
-    alert(data.message || "Invite sent");
-  });
-}
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message || "Invite sent");
+    })
+    .catch(() => {
+      alert("Server error");
+    });
+};
 </script>
 
 </body>
