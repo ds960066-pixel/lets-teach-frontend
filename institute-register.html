@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <title>Institute Registration | Lets Teach</title>
-  <!-- Backend Base URL -->
+
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
 
   <style>
@@ -56,21 +57,18 @@ if (!localStorage.uid || localStorage.role !== "institute") {
 <p id="result"></p>
 
 <script>
-const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
-
-/* ================= SOURCE OF TRUTH ================= */
+/* ================= CONTEXT ================= */
 const uid = localStorage.getItem("uid");
 document.getElementById("uidText").innerText = uid;
 
-/* ================= REGISTER ================= */
-async function registerInstitute() {
+/* ================= REGISTER (GLOBAL) ================= */
+window.registerInstitute = async function () {
   const name = document.getElementById("name").value.trim();
   const phone = document.getElementById("phone").value.trim();
   const city = document.getElementById("city").value.trim();
   const address = document.getElementById("address").value.trim();
-  const subjectsRaw = document
-    .getElementById("subjectsNeeded")
-    .value.trim();
+  const subjectsRaw =
+    document.getElementById("subjectsNeeded").value.trim();
 
   if (!name || !phone || !city) {
     alert("Please fill required fields");
@@ -104,13 +102,3 @@ async function registerInstitute() {
     }
 
     // ✅ AUTO REDIRECT TO DASHBOARD
-    window.location.href = "institute-dashboard.html";
-  } catch (err) {
-    document.getElementById("result").innerText =
-      "Server error. Try again.";
-  }
-}
-</script>
-
-</body>
-</html>
