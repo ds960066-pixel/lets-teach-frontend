@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Login | Lets Teach</title>
 
-  <!-- Backend Base URL -->
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
 </head>
 <body>
@@ -21,8 +21,6 @@
 <button onclick="loginInstitute()">Login as Institute</button>
 
 <script>
-const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
-
 /* ================= UTIL ================= */
 function getUid() {
   const uid = document.getElementById("uid").value.trim();
@@ -61,7 +59,7 @@ async function handleLogin(role) {
     const data = await res.json();
 
     /*
-      Backend response expected:
+      Expected backend response:
       { status: "REGISTER_REQUIRED" | "OK" | "BLOCKED" }
     */
 
