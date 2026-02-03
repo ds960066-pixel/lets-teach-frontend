@@ -5,11 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <title>Teaching Jobs | Lets Teach</title>
-  <meta name="description" content="Browse teaching jobs by city and subject. Teachers can apply after login. Jobs are posted by schools and coaching institutes." />
-  <link rel="canonical" href="https://ds960066-pixel.github.io/lets-teach-frontend/jobs.html">
-  
-<!-- Backend Base URL -->
+  <meta name="description"
+        content="Browse teaching jobs by city and subject. Teachers can apply after login. Jobs are posted by schools and coaching institutes." />
+  <link rel="canonical"
+        href="https://ds960066-pixel.github.io/lets-teach-frontend/jobs.html">
+
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -17,23 +20,9 @@
       background: #f4f4f4;
       margin: 0;
     }
-
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    h1 {
-      margin: 0 0 8px;
-      font-size: 28px;
-    }
-
-    .muted {
-      color: #666;
-      margin: 0 0 14px;
-      line-height: 1.4;
-    }
-
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { margin: 0 0 8px; font-size: 28px; }
+    .muted { color: #666; margin: 0 0 14px; line-height: 1.4; }
     .card {
       background: #fff;
       padding: 15px;
@@ -41,7 +30,6 @@
       border-radius: 6px;
       border: 1px solid #eee;
     }
-
     .filters {
       display: flex;
       gap: 8px;
@@ -49,16 +37,12 @@
       align-items: center;
       margin: 12px 0;
     }
-
     input, select {
       padding: 10px;
       border-radius: 6px;
       border: 1px solid #ddd;
-      outline: none;
       min-width: 160px;
-      background: #fff;
     }
-
     button {
       padding: 10px 14px;
       background: #27ae60;
@@ -68,12 +52,7 @@
       border-radius: 6px;
       font-weight: 600;
     }
-
-    button:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-
+    button:disabled { opacity: 0.7; cursor: not-allowed; }
     .login-hint {
       background: #fff3cd;
       padding: 10px;
@@ -82,13 +61,11 @@
       color: #856404;
       border: 1px solid #ffeeba;
     }
-
     .danger {
       background: #fdecea;
       color: #611a15;
       border: 1px solid #f5c6cb;
     }
-
     .row {
       display: flex;
       gap: 14px;
@@ -96,18 +73,6 @@
       margin-top: 10px;
       color: #333;
     }
-
-    .row p {
-      margin: 6px 0;
-    }
-
-    .top-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-
     a.btn-link {
       display: inline-block;
       padding: 10px 14px;
@@ -118,11 +83,6 @@
       text-decoration: none;
       font-weight: 600;
     }
-
-    .small {
-      font-size: 13px;
-    }
-
     .badge {
       display: inline-block;
       padding: 4px 8px;
@@ -130,244 +90,88 @@
       background: #f1f1f1;
       font-size: 12px;
       margin-left: 8px;
-      color: #333;
     }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <!-- ✅ Static content (SEO + Soft-404 safe) -->
-    <h1>Teaching Jobs <span class="badge">Lets Teach</span></h1>
-    <p class="muted">
-      Browse teaching jobs by <b>city</b> and <b>subject</b>. Jobs are posted by schools and coaching institutes.
-      Teachers can apply after login.
-    </p>
+<div class="container">
 
-    <!-- 🔔 PUBLIC MODE MESSAGE -->
-    <div id="loginHint" class="login-hint" style="display:none;">
-      Please login as a <b>Teacher</b> to apply for jobs.
-      <div class="top-actions">
-        <a class="btn-link" href="./login.html">Login</a>
-        <a class="btn-link" href="./index.html">Home</a>
-      </div>
+  <h1>Teaching Jobs <span class="badge">Lets Teach</span></h1>
+  <p class="muted">
+    Browse teaching jobs by <b>city</b> and <b>subject</b>.
+    Teachers can apply after login.
+  </p>
+
+  <div id="loginHint" class="login-hint" style="display:none;">
+    Please login as a <b>Teacher</b> to apply for jobs.
+    <div style="margin-top:8px;">
+      <a class="btn-link" href="./login.html">Login</a>
+      <a class="btn-link" href="./index.html">Home</a>
     </div>
-
-    <!-- ✅ Filters -->
-    <div class="card">
-      <div class="filters">
-        <input id="city" placeholder="City (e.g. Delhi)" />
-        <input id="subject" placeholder="Subject (e.g. Maths)" />
-        <select id="role">
-          <option value="">Any</option>
-          <option value="part-time">Part-time</option>
-          <option value="full-time">Full-time</option>
-        </select>
-
-        <button id="searchBtn" onclick="loadJobs()">Search</button>
-      </div>
-      <p class="muted small" style="margin: 0;">
-        Tip: Leave filters blank and click Search to see all available jobs.
-      </p>
-    </div>
-
-    <!-- ✅ IMPORTANT: Static preview cards to avoid Soft 404 -->
-    <div id="jobs">
-      <div class="card">
-        <h3 style="margin:0 0 8px;">Maths Teacher (Part-time)</h3>
-        <div class="row">
-          <p><b>Subject:</b> Maths</p>
-          <p><b>City:</b> Delhi</p>
-          <p><b>Role:</b> part-time</p>
-          <p><b>Salary:</b> Negotiable</p>
-        </div>
-        <div class="muted small">Login as Teacher to apply.</div>
-      </div>
-
-      <div class="card">
-        <h3 style="margin:0 0 8px;">English Teacher (Full-time)</h3>
-        <div class="row">
-          <p><b>Subject:</b> English</p>
-          <p><b>City:</b> Jaipur</p>
-          <p><b>Role:</b> full-time</p>
-          <p><b>Salary:</b> ₹15k–₹25k</p>
-        </div>
-        <div class="muted small">Login as Teacher to apply.</div>
-      </div>
-
-      <div class="card">
-        <h3 style="margin:0 0 8px;">Science Faculty (Hybrid)</h3>
-        <div class="row">
-          <p><b>Subject:</b> Science</p>
-          <p><b>City:</b> Lucknow</p>
-          <p><b>Role:</b> Any</p>
-          <p><b>Salary:</b> Negotiable</p>
-        </div>
-        <div class="muted small">Login as Teacher to apply.</div>
-      </div>
-    </div>
-
-    <!-- ✅ Extra static text (helps avoid thin-content Soft 404) -->
-    <div class="card">
-      <h2 style="margin:0 0 8px; font-size:18px;">How job applications work</h2>
-      <p class="muted" style="margin:0;">
-        Institutes post job openings. Teachers can apply after uploading their resume PDF.
-        If no jobs are available right now, please check back later.
-      </p>
-    </div>
-
-    <noscript>
-      <div class="card danger">
-        Please enable JavaScript to view jobs.
-      </div>
-    </noscript>
   </div>
 
+  <div class="card">
+    <div class="filters">
+      <input id="city" placeholder="City" />
+      <input id="subject" placeholder="Subject" />
+      <select id="role">
+        <option value="">Any</option>
+        <option value="part-time">Part-time</option>
+        <option value="full-time">Full-time</option>
+      </select>
+      <button id="searchBtn" onclick="loadJobs()">Search</button>
+    </div>
+  </div>
+
+  <!-- Static preview (SEO / soft-404 safe) -->
+  <div id="jobs">
+    <div class="card"><b>Sample Job</b> – Login as teacher to apply</div>
+  </div>
+
+</div>
+
 <script>
-  const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
+/* ===== AUTH STATE ===== */
+const uid = localStorage.getItem("uid");
+const userType = localStorage.getItem("role");
 
-  // 🔐 AUTH STATE
-  const uid = localStorage.getItem("uid");
-  const userType = localStorage.getItem("role"); // expected: "teacher"
+if (!uid || userType !== "teacher") {
+  document.getElementById("loginHint").style.display = "block";
+}
 
-  // Show hint if not logged-in teacher
-  if (!uid || userType !== "teacher") {
-    document.getElementById("loginHint").style.display = "block";
-  }
+/* ===== HELPERS ===== */
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-  function buildBrowseUrl() {
-    const city = (document.getElementById("city").value || "").trim();
-    const subject = (document.getElementById("subject").value || "").trim();
-    const role = (document.getElementById("role").value || "").trim();
+function buildBrowseUrl() {
+  const city = cityInput.value.trim();
+  const subject = subjectInput.value.trim();
+  const role = roleInput.value.trim();
 
-    const params = new URLSearchParams();
-    if (city) params.set("city", city);
-    if (subject) params.set("subject", subject);
-    if (role) params.set("role", role);
+  const params = new URLSearchParams();
+  if (city) params.set("city", city);
+  if (subject) params.set("subject", subject);
+  if (role) params.set("role", role);
 
-    return `${BASE_URL}/api/job/browse?${params.toString()}`;
-  }
+  return `${BASE_URL}/api/job/browse?${params.toString()}`;
+}
 
-  function setLoading(isLoading) {
-    const btn = document.getElementById("searchBtn");
-    btn.disabled = isLoading;
-    btn.textContent = isLoading ? "Loading..." : "Search";
-  }
+function setLoading(v) {
+  searchBtn.disabled = v;
+  searchBtn.textContent = v ? "Loading..." : "Search";
+}
 
-  // LOAD JOBS (PUBLIC)
-  async function loadJobs() {
-    const box = document.getElementById("jobs");
-    setLoading(true);
+/* ===== LOAD JOBS (GLOBAL) ===== */
+window.loadJobs = async function () {
+  const box = document.getElementById("jobs");
+  setLoading(true);
 
-    try {
-      const url = buildBrowseUrl();
-      const res = await fetch(url, { cache: "no-store" });
-      const data = await res.json().catch(() => ({}));
-
-      const jobs = data.jobs || [];
-
-      // ✅ Only clear static preview when real jobs exist
-      if (Array.isArray(jobs) && jobs.length > 0) {
-        box.innerHTML = "";
-
-        jobs.forEach(j => {
-          const div = document.createElement("div");
-          div.className = "card";
-
-          const canApply = (uid && userType === "teacher");
-
-          div.innerHTML = `
-            <h3 style="margin:0 0 8px;">${escapeHtml(j.title || "Teaching Job")}</h3>
-
-            <div class="row">
-              <p><b>Subject:</b> ${escapeHtml(j.subject || "-")}</p>
-              <p><b>City:</b> ${escapeHtml(j.city || "-")}</p>
-              <p><b>Role:</b> ${escapeHtml(j.role || "Any")}</p>
-              <p><b>Salary:</b> ${escapeHtml(j.salary || "Negotiable")}</p>
-            </div>
-
-            <div style="margin-top:10px;">
-              ${
-                canApply
-                  ? `<button onclick="applyJob('${j._id}')">Apply</button>`
-                  : `<a class="btn-link" href="./login.html">Login to Apply</a>`
-              }
-            </div>
-          `;
-
-          box.appendChild(div);
-        });
-
-        return;
-      }
-
-      // ✅ If no real jobs: keep static preview + show a friendly message card on top
-      const info = document.createElement("div");
-      info.className = "card";
-      info.innerHTML = `
-        <h3 style="margin:0 0 6px;">No live jobs available right now</h3>
-        <p class="muted" style="margin:0 0 10px;">
-          These are example listings. Real jobs will appear here as institutes post them.
-          Try changing city/subject filters.
-        </p>
-        <button onclick="loadJobs()">Refresh</button>
-      `;
-      box.prepend(info);
-
-    } catch (e) {
-      // ✅ Keep static preview and show error card (don’t replace page with “error”, helps avoid Soft 404)
-      const box = document.getElementById("jobs");
-      const err = document.createElement("div");
-      err.className = "card danger";
-      err.innerHTML = `
-        <h3 style="margin:0 0 6px;">Jobs are temporarily unavailable</h3>
-        <p style="margin:0 0 10px;">Please try again later.</p>
-        <button onclick="loadJobs()">Retry</button>
-      `;
-      box.prepend(err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // APPLY JOB (TEACHER ONLY)
-  async function applyJob(jobId) {
-    if (!uid || userType !== "teacher") {
-      alert("Please login as Teacher to apply");
-      window.location.href = "login.html";
-      return;
-    }
-
-    try {
-      const res = await fetch(`${BASE_URL}/api/job/apply`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jobId: jobId,
-          teacherUid: uid
-        })
-      });
-
-      const data = await res.json().catch(() => ({}));
-      alert(data.message || (res.ok ? "Applied successfully" : "Apply failed"));
-    } catch (e) {
-      alert("Server error. Please try again later.");
-    }
-  }
-
-  // Prevent HTML injection in job fields
-  function escapeHtml(str) {
-    return String(str)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  // INITIAL LOAD
-  loadJobs();
-</script>
-
-</body>
-</html>
+  try {
+    const res = awai
