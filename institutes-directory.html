@@ -3,9 +3,10 @@
 <head>
   <title>Institutes Directory | Lets Teach</title>
 
-  <!-- Backend Base URL -->
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
 </head>
+
 <body>
 
 <h2>Institutes Directory</h2>
@@ -17,16 +18,19 @@
 <ul id="list"></ul>
 
 <script>
-const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
-
-function load() {
+/* ================= LOAD MANUAL INSTITUTES (GLOBAL) ================= */
+window.load = function () {
   const city = document.getElementById("city").value.trim();
   let url = `${BASE_URL}/api/manual-institute/browse`;
-  if (city) url += `?city=${encodeURIComponent(city)}`;
+
+  if (city) {
+    url += `?city=${encodeURIComponent(city)}`;
+  }
 
   fetch(url)
     .then(r => r.json())
     .then(d => {
+      const list = document.getElementById("list");
       list.innerHTML = "";
 
       if (!d.institutes || d.institutes.length === 0) {
@@ -57,8 +61,11 @@ function load() {
         li.innerHTML += "<hr>";
         list.appendChild(li);
       });
+    })
+    .catch(() => {
+      alert("Server error");
     });
-}
+};
 </script>
 
 </body>
