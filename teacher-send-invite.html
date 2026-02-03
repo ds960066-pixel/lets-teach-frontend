@@ -3,9 +3,10 @@
 <head>
   <title>Send Invite | Lets Teach</title>
 
-  <!-- Backend Base URL -->
+  <!-- Backend Base URL (ONLY SOURCE) -->
   <script src="./config.js"></script>
 </head>
+
 <body>
 
 <h2>Teacher → Institute Invite</h2>
@@ -19,9 +20,8 @@
 <p id="result"></p>
 
 <script>
-const BASE_URL = "https://lets-teach-backend-v38i.onrender.com";
-
-function sendInvite() {
+/* ===== SEND INVITE (GLOBAL) ===== */
+window.sendInvite = function () {
   const teacherUid = document.getElementById("teacherUid").value;
   const instituteUid = document.getElementById("instituteUid").value;
 
@@ -40,16 +40,16 @@ function sendInvite() {
       toUid: instituteUid
     })
   })
-  .then(res => res.json())
-  .then(data => {
-    document.getElementById("result").innerText =
-      data.success ? "Invite sent successfully ✅" : data.message;
-  })
-  .catch(() => {
-    document.getElementById("result").innerText =
-      "Error sending invite";
-  });
-}
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("result").innerText =
+        data.success ? "Invite sent successfully ✅" : data.message;
+    })
+    .catch(() => {
+      document.getElementById("result").innerText =
+        "Error sending invite";
+    });
+};
 </script>
 
 </body>
