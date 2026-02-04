@@ -1,186 +1,192 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Panel | Lets Teach</title>
-  <style>
-    body { font-family: Arial; padding: 20px; background:#f4f4f4; }
-    .card { background:#fff; padding:12px; margin:10px 0; border-radius:6px; }
-    input, select { padding:8px; margin:4px; }
-    button { padding:6px 10px; margin:4px; cursor:pointer; }
-    .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-    small { color:#555; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Browse Institutes | Lets Teach</title>
+
+  <!-- ✅ same theme -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-<h2>Lets Teach — Admin Panel</h2>
+  <!-- NAV -->
+  <div class="nav">
+    <div class="container navInner">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>Lets Teach</div>
+      </div>
 
-<p><b>⚠️ Note:</b> Ye page public repo me hai. Isko secret rakhna (link share mat karna).</p>
+      <div class="navLinks">
+        <a class="pill" href="index.html">Home</a>
+        <a class="pill" href="jobs.html">Jobs</a>
+        <a class="pill" href="login.html">Login</a>
+      </div>
+    </div>
+  </div>
 
-<hr>
+  <div class="container">
 
-<h3>Teachers</h3>
-<div class="row">
-  <input id="t_uid" placeholder="Search UID (optional)">
-  <input id="t_city" placeholder="City (optional)">
-  <input id="t_subject" placeholder="Subject (optional)">
-  <button onclick="loadTeachers()">Load Teachers</button>
-</div>
+    <div class="card cardPad">
+      <h1 class="hTitle" style="font-size:30px;margin:0 0 8px;">Browse Institutes</h1>
+      <p class="hSub" style="margin:0;">
+        City search karke institutes dekho. Invite/Chat ke liye teacher login required.
+      </p>
 
-<div id="teachers"></div>
+      <hr class="sep" />
 
-<hr>
+      <div class="sectionTitle">Search</div>
+      <div class="searchGrid" style="grid-template-columns: 1fr auto auto;">
+        <input class="input" id="city" placeholder="City (e.g. Patna, Delhi)" autocomplete="off" />
+        <button class="btn" onclick="loadInstitutes()">Search</button>
+        <button class="btn ghost" onclick="clearFilter()">Clear</button>
+      </div>
 
-<h3>Institutes</h3>
-<div class="row">
-  <input id="i_uid" placeholder="Search UID (optional)">
-  <input id="i_city" placeholder="City (optional)">
-  <button onclick="loadInstitutes()">Load Institutes</button>
-</div>
+      <p id="hint" class="meta" style="margin-top:10px;"></p>
+    </div>
 
-<div id="institutes"></div>
+    <div style="height:14px;"></div>
+
+    <div class="card cardPad">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div class="sectionTitle" style="margin:0;">Results</div>
+        <span id="count" class="badge">0</span>
+      </div>
+
+      <hr class="sep" style="margin:12px 0;" />
+
+      <div id="list" class="list"></div>
+    </div>
+
+    <div class="footer muted">
+      <a href="index.html">Home</a> ·
+      <a href="jobs.html">Jobs</a> ·
+      <a href="login.html">Login</a>
+    </div>
+
+  </div>
 
 <!-- 🔒 SINGLE SOURCE OF TRUTH -->
 <script src="/lets-teach-web-v2/config.js"></script>
 
 <script>
-function qs(obj){
-  const p = [];
-  Object.keys(obj).forEach(k=>{
-    if(obj[k]) p.push(`${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`);
-  });
-  return p.length ? ("?" + p.join("&")) : "";
+function escapeHtml(str) {
+  return String(str || "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
 
-/* ================= TEACHERS ================= */
-async function loadTeachers(){
-  const uid = document.getElementById("t_uid").value.trim();
-  const city = document.getElementById("t_city").value.trim();
-  const subject = document.getElementById("t_subject").value.trim();
+function setHint(msg) {
+  document.getElementById("hint").innerHTML = msg || "";
+}
 
-  const res = await fetch(`${BASE_URL}/api/admin/all/teachers` + qs({uid, city, subject}));
-  const data = await res.json();
+function clearFilter() {
+  document.getElementById("city").value = "";
+  loadInstitutes();
+}
 
-  const box = document.getElementById("teachers");
-  box.innerHTML = "";
+/* ================= LOAD INSTITUTES ================= */
+function loadInstitutes() {
+  const city = document.getElementById("city").value.trim();
 
-  if(!data.success || !data.teachers || data.teachers.length === 0){
-    box.innerHTML = "<p>No teachers found</p>";
+  let url = `${BASE_URL}/api/institute/browse`;
+  if (city) url += `?city=${encodeURIComponent(city)}`;
+
+  const box = document.getElementById("list");
+  box.innerHTML = `<div class="meta">Loading...</div>`;
+  setHint("");
+
+  const myUid = localStorage.getItem("uid");
+  const myRole = localStorage.getItem("role");
+
+  if (!(myUid && myRole === "teacher")) {
+    setHint(`🔒 Invite/Chat ke liye <a class="smallLink" href="login.html">Login as teacher</a>`);
+  } else {
+    setHint(`✅ Logged-in Teacher: invites direct yahi se send kar sakte ho.`);
+  }
+
+  fetch(url)
+    .then(r => r.json())
+    .then(d => {
+      const institutes = (d && d.institutes) ? d.institutes : [];
+      document.getElementById("count").innerText = institutes.length;
+
+      if (!institutes.length) {
+        box.innerHTML = `<div class="meta">No institutes found</div>`;
+        return;
+      }
+
+      box.innerHTML = "";
+      institutes.forEach(i => {
+        const div = document.createElement("div");
+        div.className = "item";
+
+        const subjects = Array.isArray(i.subjectsNeeded)
+          ? i.subjectsNeeded.join(", ")
+          : "—";
+
+        const inviteBtn = (myUid && myRole === "teacher")
+          ? `<button class="btn" style="padding:10px 12px" onclick="invite('${encodeURIComponent(i.uid)}')">Send Invite</button>`
+          : `<a class="smallLink" href="login.html">Login to invite</a>`;
+
+        div.innerHTML = `
+          <div style="flex:1;">
+            <div style="font-weight:800;font-size:16px;">
+              ${escapeHtml(i.name || "Institute")}
+            </div>
+            <div class="meta">
+              ${escapeHtml(i.city || "—")} · Needs: ${escapeHtml(subjects)}
+            </div>
+
+            <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+              <a class="smallLink" href="institute.html?uid=${encodeURIComponent(i.uid)}">View Profile</a>
+              ${inviteBtn}
+            </div>
+          </div>
+          <div class="badge">Institute</div>
+        `;
+
+        box.appendChild(div);
+      });
+    })
+    .catch(() => {
+      document.getElementById("count").innerText = "0";
+      box.innerHTML = `<div class="meta">Server error</div>`;
+    });
+}
+
+/* ================= INVITE (TEACHER -> INSTITUTE) ================= */
+function invite(instituteUid) {
+  const myUid = localStorage.getItem("uid");
+  const myRole = localStorage.getItem("role");
+
+  if (!myUid || myRole !== "teacher") {
+    alert("Login as teacher to invite");
+    window.location.href = "login.html";
     return;
   }
 
-  data.teachers.forEach(t=>{
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `
-      <b>${t.name}</b> (${t.uid})<br>
-      ${t.subject} | ${t.city}<br>
-      <small>Status: ${t.verificationStatus} | Blocked: ${t.isBlocked}</small><br>
-      <button onclick="verifyTeacher('${t.uid}')">Verify</button>
-      <button onclick="rejectTeacher('${t.uid}')">Reject</button>
-      <button onclick="blockTeacher('${t.uid}')">Block</button>
-      <button onclick="unblockTeacher('${t.uid}')">Unblock</button>
-      <button onclick="deleteTeacher('${t.uid}')">Delete</button>
-    `;
-    box.appendChild(div);
-  });
+  fetch(`${BASE_URL}/api/invite/create`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      fromType: "teacher",
+      fromUid: myUid,
+      toType: "institute",
+      toUid: decodeURIComponent(instituteUid)
+    })
+  })
+  .then(r => r.json())
+  .then(d => alert(d.message || (d.success ? "Invite sent" : "Invite failed")))
+  .catch(() => alert("Server error"));
 }
 
-async function verifyTeacher(uid){
-  await fetch(`${BASE_URL}/api/admin/verify/teacher/${uid}`, {method:"POST"});
-  alert("Verified");
-  loadTeachers();
-}
-async function rejectTeacher(uid){
-  await fetch(`${BASE_URL}/api/admin/reject/teacher/${uid}`, {
-    method:"POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({reason:"Rejected by admin"})
-  });
-  alert("Rejected");
-  loadTeachers();
-}
-async function blockTeacher(uid){
-  await fetch(`${BASE_URL}/api/admin/block/teacher/${uid}`, {method:"POST"});
-  alert("Blocked");
-  loadTeachers();
-}
-async function unblockTeacher(uid){
-  await fetch(`${BASE_URL}/api/admin/unblock/teacher/${uid}`, {method:"POST"});
-  alert("Unblocked");
-  loadTeachers();
-}
-async function deleteTeacher(uid){
-  if(!confirm("Delete teacher permanently?")) return;
-  await fetch(`${BASE_URL}/api/admin/delete/teacher/${uid}`, {method:"DELETE"});
-  alert("Deleted");
-  loadTeachers();
-}
-
-/* ================= INSTITUTES ================= */
-async function loadInstitutes(){
-  const uid = document.getElementById("i_uid").value.trim();
-  const city = document.getElementById("i_city").value.trim();
-
-  const res = await fetch(`${BASE_URL}/api/admin/all/institutes` + qs({uid, city}));
-  const data = await res.json();
-
-  const box = document.getElementById("institutes");
-  box.innerHTML = "";
-
-  if(!data.success || !data.institutes || data.institutes.length === 0){
-    box.innerHTML = "<p>No institutes found</p>";
-    return;
-  }
-
-  data.institutes.forEach(i=>{
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `
-      <b>${i.name}</b> (${i.uid})<br>
-      ${i.city}<br>
-      <small>Status: ${i.verificationStatus} | Registered: ${i.registered} | Blocked: ${i.isBlocked}</small><br>
-      <button onclick="verifyInstitute('${i.uid}')">Verify</button>
-      <button onclick="rejectInstitute('${i.uid}')">Reject</button>
-      <button onclick="blockInstitute('${i.uid}')">Block</button>
-      <button onclick="unblockInstitute('${i.uid}')">Unblock</button>
-      <button onclick="deleteInstitute('${i.uid}')">Delete</button>
-    `;
-    box.appendChild(div);
-  });
-}
-
-async function verifyInstitute(uid){
-  await fetch(`${BASE_URL}/api/admin/verify/institute/${uid}`, {method:"POST"});
-  alert("Verified");
-  loadInstitutes();
-}
-async function rejectInstitute(uid){
-  await fetch(`${BASE_URL}/api/admin/reject/institute/${uid}`, {
-    method:"POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({reason:"Rejected by admin"})
-  });
-  alert("Rejected");
-  loadInstitutes();
-}
-async function blockInstitute(uid){
-  await fetch(`${BASE_URL}/api/admin/block/institute/${uid}`, {method:"POST"});
-  alert("Blocked");
-  loadInstitutes();
-}
-async function unblockInstitute(uid){
-  await fetch(`${BASE_URL}/api/admin/unblock/institute/${uid}`, {method:"POST"});
-  alert("Unblocked");
-  loadInstitutes();
-}
-async function deleteInstitute(uid){
-  if(!confirm("Delete institute permanently?")) return;
-  await fetch(`${BASE_URL}/api/admin/delete/institute/${uid}`, {method:"DELETE"});
-  alert("Deleted");
-  loadInstitutes();
-}
+/* ================= INITIAL LOAD ================= */
+loadInstitutes();
 </script>
 
 </body>
