@@ -1,115 +1,187 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <title>Lets Teach | Find Teachers & Institutes</title>
-
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <meta
-    name="description"
-    content="Find teachers and institutes by city and subject. Lets Teach is a free public platform for education hiring."
-  />
-
-  <meta
-    name="keywords"
-    content="teachers, institutes, teaching jobs, school hiring, lets teach"
-  />
-
-  <!-- Backend Base URL (SINGLE SOURCE) -->
-  <script src="./config.js"></script>
+  <title>Admin Panel | Lets Teach</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background:#f4f4f4; }
+    .card { background:#fff; padding:12px; margin:10px 0; border-radius:6px; }
+    input, select { padding:8px; margin:4px; }
+    button { padding:6px 10px; margin:4px; cursor:pointer; }
+    .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    small { color:#555; }
+  </style>
 </head>
-
 <body>
 
-<h1>Lets Teach</h1>
-<p>Find Teachers & Institutes — <b>No Login Required</b></p>
+<h2>Lets Teach — Admin Panel</h2>
+
+<p><b>⚠️ Note:</b> Ye page public repo me hai. Isko secret rakhna (link share mat karna).</p>
 
 <hr>
 
-<h3>Search</h3>
+<h3>Teachers</h3>
+<div class="row">
+  <input id="t_uid" placeholder="Search UID (optional)">
+  <input id="t_city" placeholder="City (optional)">
+  <input id="t_subject" placeholder="Subject (optional)">
+  <button onclick="loadTeachers()">Load Teachers</button>
+</div>
 
-<input
-  id="city"
-  placeholder="Enter city (e.g. Patna, Delhi)"
-  autocomplete="off"
-/>
-
-<input
-  id="subject"
-  placeholder="Enter subject (e.g. Math, Physics)"
-  autocomplete="off"
-/>
-
-<button onclick="applyFilter()">Search</button>
+<div id="teachers"></div>
 
 <hr>
 
-<h2>Teachers</h2>
-<ul id="teachers"></ul>
+<h3>Institutes</h3>
+<div class="row">
+  <input id="i_uid" placeholder="Search UID (optional)">
+  <input id="i_city" placeholder="City (optional)">
+  <button onclick="loadInstitutes()">Load Institutes</button>
+</div>
 
-<hr>
+<div id="institutes"></div>
 
-<h2>Institutes</h2>
-<ul id="institutes"></ul>
-
-<hr>
-
-<p>
-  <a href="./login.html">Login</a> |
-  <a href="./jobs.html">Browse Jobs</a>
-</p>
+<!-- 🔒 SINGLE SOURCE OF TRUTH -->
+<script src="/lets-teach-web-v2/config.js"></script>
 
 <script>
-/* ================= APPLY FILTER ================= */
-function applyFilter() {
-  const city = document.getElementById("city").value.trim();
-  const subject = document.getElementById("subject").value.trim();
-
-  loadTeachers(city, subject);
-  loadInstitutes(city);
+function qs(obj){
+  const p = [];
+  Object.keys(obj).forEach(k=>{
+    if(obj[k]) p.push(`${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`);
+  });
+  return p.length ? ("?" + p.join("&")) : "";
 }
 
-/* ================= LOAD TEACHERS (PUBLIC) ================= */
-function loadTeachers(city = "", subject = "") {
-  let url = `${BASE_URL}/api/teacher/public`;
+/* ================= TEACHERS ================= */
+async function loadTeachers(){
+  const uid = document.getElementById("t_uid").value.trim();
+  const city = document.getElementById("t_city").value.trim();
+  const subject = document.getElementById("t_subject").value.trim();
 
-  const params = [];
-  if (city) params.push(`city=${encodeURIComponent(city)}`);
-  if (subject) params.push(`subject=${encodeURIComponent(subject)}`);
+  const res = await fetch(`${BASE_URL}/api/admin/all/teachers` + qs({uid, city, subject}));
+  const data = await res.json();
 
-  if (params.length) {
-    url += "?" + params.join("&");
+  const box = document.getElementById("teachers");
+  box.innerHTML = "";
+
+  if(!data.success || !data.teachers || data.teachers.length === 0){
+    box.innerHTML = "<p>No teachers found</p>";
+    return;
   }
 
-  fetch(url)
-    .then(res => res.json())
-    .then(data => {
-      const ul = document.getElementById("teachers");
-      ul.innerHTML = "";
+  data.teachers.forEach(t=>{
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <b>${t.name}</b> (${t.uid})<br>
+      ${t.subject} | ${t.city}<br>
+      <small>Status: ${t.verificationStatus} | Blocked: ${t.isBlocked}</small><br>
+      <button onclick="verifyTeacher('${t.uid}')">Verify</button>
+      <button onclick="rejectTeacher('${t.uid}')">Reject</button>
+      <button onclick="blockTeacher('${t.uid}')">Block</button>
+      <button onclick="unblockTeacher('${t.uid}')">Unblock</button>
+      <button onclick="deleteTeacher('${t.uid}')">Delete</button>
+    `;
+    box.appendChild(div);
+  });
+}
 
-      if (!data.teachers || data.teachers.length === 0) {
-        ul.innerHTML = "<li>No teachers found</li>";
-        return;
-      }
+async function verifyTeacher(uid){
+  await fetch(`${BASE_URL}/api/admin/verify/teacher/${uid}`, {method:"POST"});
+  alert("Verified");
+  loadTeachers();
+}
+async function rejectTeacher(uid){
+  await fetch(`${BASE_URL}/api/admin/reject/teacher/${uid}`, {
+    method:"POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({reason:"Rejected by admin"})
+  });
+  alert("Rejected");
+  loadTeachers();
+}
+async function blockTeacher(uid){
+  await fetch(`${BASE_URL}/api/admin/block/teacher/${uid}`, {method:"POST"});
+  alert("Blocked");
+  loadTeachers();
+}
+async function unblockTeacher(uid){
+  await fetch(`${BASE_URL}/api/admin/unblock/teacher/${uid}`, {method:"POST"});
+  alert("Unblocked");
+  loadTeachers();
+}
+async function deleteTeacher(uid){
+  if(!confirm("Delete teacher permanently?")) return;
+  await fetch(`${BASE_URL}/api/admin/delete/teacher/${uid}`, {method:"DELETE"});
+  alert("Deleted");
+  loadTeachers();
+}
 
-      data.teachers.forEach(t => {
-        const statusTag =
-          t.verificationStatus !== "verified"
-            ? " <small style='color:red'>(Unverified)</small>"
-            : " <small style='color:green'>(Verified)</small>";
+/* ================= INSTITUTES ================= */
+async function loadInstitutes(){
+  const uid = document.getElementById("i_uid").value.trim();
+  const city = document.getElementById("i_city").value.trim();
 
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <b>${t.name}</b>${statusTag}<br>
-          ${t.subject} — ${t.city}<br>
-          Experience: ${t.experience || 0} yrs<br>
-          <a href="./teacher.html?uid=${t.uid}">View Profile</a>
-          <hr>
-        `;
-        ul.appendChild(li);
-      });
-    })
-    .catch(() => {
-      document.getElementById("teachers").innerHTML =
-        "<li>Error
+  const res = await fetch(`${BASE_URL}/api/admin/all/institutes` + qs({uid, city}));
+  const data = await res.json();
+
+  const box = document.getElementById("institutes");
+  box.innerHTML = "";
+
+  if(!data.success || !data.institutes || data.institutes.length === 0){
+    box.innerHTML = "<p>No institutes found</p>";
+    return;
+  }
+
+  data.institutes.forEach(i=>{
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <b>${i.name}</b> (${i.uid})<br>
+      ${i.city}<br>
+      <small>Status: ${i.verificationStatus} | Registered: ${i.registered} | Blocked: ${i.isBlocked}</small><br>
+      <button onclick="verifyInstitute('${i.uid}')">Verify</button>
+      <button onclick="rejectInstitute('${i.uid}')">Reject</button>
+      <button onclick="blockInstitute('${i.uid}')">Block</button>
+      <button onclick="unblockInstitute('${i.uid}')">Unblock</button>
+      <button onclick="deleteInstitute('${i.uid}')">Delete</button>
+    `;
+    box.appendChild(div);
+  });
+}
+
+async function verifyInstitute(uid){
+  await fetch(`${BASE_URL}/api/admin/verify/institute/${uid}`, {method:"POST"});
+  alert("Verified");
+  loadInstitutes();
+}
+async function rejectInstitute(uid){
+  await fetch(`${BASE_URL}/api/admin/reject/institute/${uid}`, {
+    method:"POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({reason:"Rejected by admin"})
+  });
+  alert("Rejected");
+  loadInstitutes();
+}
+async function blockInstitute(uid){
+  await fetch(`${BASE_URL}/api/admin/block/institute/${uid}`, {method:"POST"});
+  alert("Blocked");
+  loadInstitutes();
+}
+async function unblockInstitute(uid){
+  await fetch(`${BASE_URL}/api/admin/unblock/institute/${uid}`, {method:"POST"});
+  alert("Unblocked");
+  loadInstitutes();
+}
+async function deleteInstitute(uid){
+  if(!confirm("Delete institute permanently?")) return;
+  await fetch(`${BASE_URL}/api/admin/delete/institute/${uid}`, {method:"DELETE"});
+  alert("Deleted");
+  loadInstitutes();
+}
+</script>
+
+</body>
+</html>
